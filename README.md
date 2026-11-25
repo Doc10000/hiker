@@ -5,6 +5,9 @@
 > 🏆 **Хакатон hackathon.kz** — пакет для сдачи в [`hackathon/`](hackathon/):
 > `IDEA.md` (идея под критерии) · `PITCH_10_SLIDES.md` · `PITCH_VIDEO_3MIN.md` ·
 > `RECOMMENDATIONS.md` (рекомендации по уровню) · `SUBMISSION.md` (заявка).
+>
+> 🔗 **Живой прототип:** https://doc10000.github.io/hiker/www/index.html
+> **Код:** https://github.com/Doc10000/hiker
 
 > Туризм растёт быстрее сервиса. На Кольсае нет стабильной мобильной связи —
 > турист уходит в горы и становится невидимым для близких.
