@@ -7,7 +7,7 @@ android/build/
 android/app/build/
 android/local.properties
 android/.idea/
-*.apk
+# *.apk намеренно НЕ игнорируем — готовая сборка лежит в репозитории
 
 # временные дампы UI-тестов
 ui-*.txt

@@ -8,6 +8,7 @@
 >
 > 🔗 **Живой прототип:** https://doc10000.github.io/hiker/www/index.html
 > **Код:** https://github.com/Doc10000/hiker
+> 📲 **APK (скачать):** https://github.com/Doc10000/hiker/raw/main/hiker-debug.apk
 
 > Туризм растёт быстрее сервиса. На Кольсае нет стабильной мобильной связи —
 > турист уходит в горы и становится невидимым для близких.
