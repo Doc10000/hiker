@@ -1,0 +1,194 @@
+/* Горный хайкер — тёмная тема, горный стиль */
+:root{
+  --bg:#0d1117; --bg2:#161b22; --bg3:#1f2630; --line:#2b3441;
+  --fg:#e6edf3; --dim:#8b949e; --acc:#39d353; --acc2:#58a6ff;
+  --danger:#ff4444; --warn:#f0883e; --radius:14px;
+  --safe:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; height:100%}
+body{background:var(--bg); color:var(--fg); font:16px/1.45 -apple-system,"Segoe UI",Roboto,sans-serif; overscroll-behavior:none}
+button{font:inherit; color:inherit; cursor:pointer}
+input{font:inherit}
+[hidden]{display:none!important}
+
+.screen{min-height:100vh; padding:16px 16px calc(84px + var(--safe)); animation:fade .18s ease}
+#screen-onboarding{padding-bottom:110px}
+#screen-sos{padding-bottom:24px}
+@keyframes fade{from{opacity:0; transform:translateY(6px)}to{opacity:1}}
+
+/* ── онбординг ── */
+.ob-progress{display:flex; gap:8px; justify-content:center; margin:8px 0 24px}
+.dot{width:8px; height:8px; border-radius:50%; background:var(--line); transition:.2s}
+.dot.active{background:var(--acc); transform:scale(1.3)}
+.ob-step h1{font-size:30px; margin:8px 0 6px}
+.ob-step h2{font-size:22px; margin:8px 0 16px; line-height:1.3}
+.sub{color:var(--dim); margin:0 0 20px}
+.field{display:block; color:var(--dim); font-size:13px; margin:14px 0}
+.field input{display:block; width:100%; margin-top:6px; padding:13px 14px; background:var(--bg2);
+  border:1px solid var(--line); border-radius:10px; color:var(--fg); outline:none}
+.field input:focus{border-color:var(--acc2)}
+.choices{display:grid; gap:10px}
+.choice{padding:15px 16px; background:var(--bg2); border:1px solid var(--line); border-radius:12px;
+  text-align:left; transition:.15s}
+.choice:active{transform:scale(.98)}
+.choice.sel{border-color:var(--acc); background:#12251a; box-shadow:0 0 0 1px var(--acc) inset}
+.hint{color:var(--dim); font-size:13px}
+.ob-nav{position:fixed; left:0; right:0; bottom:0; display:flex; gap:10px; padding:14px 16px calc(14px + var(--safe));
+  background:linear-gradient(transparent, var(--bg) 30%)}
+
+/* ── кнопки ── */
+.btn{border:none; border-radius:12px; padding:13px 18px; background:var(--bg3); transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--acc); color:#04160a; font-weight:600}
+.btn.danger{background:var(--danger); color:#fff; font-weight:700}
+.btn.ghost{background:transparent; border:1px solid var(--line); color:var(--fg)}
+.btn.link{background:none; color:var(--acc2); border:none}
+.btn.big{width:100%; padding:15px; font-size:16px}
+.btn:disabled{opacity:.45}
+
+/* ── шапка ── */
+.app-header{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px}
+.app-header.sticky{position:sticky; top:0; background:var(--bg); z-index:5; margin:-16px -16px 14px; padding:14px 16px 10px}
+.greet{font-size:22px; font-weight:700}
+.badge-row{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap}
+.chip{font-size:12px; padding:4px 10px; border-radius:999px; background:var(--bg3); color:var(--dim)}
+.chip.ok{background:#12251a; color:var(--acc)}
+.chip.live{background:#2d1111; color:var(--danger); animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.55}}
+.icon-btn{width:40px; height:40px; border-radius:12px; background:var(--bg2); border:1px solid var(--line); font-size:18px}
+.route-title{font-size:17px; font-weight:600; text-align:center; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+.banner{background:#3d2b00; border:1px solid var(--warn); color:#ffd9a0; padding:10px 14px;
+  border-radius:10px; font-size:14px; margin-bottom:14px}
+.section-title{color:var(--dim); font-size:13px; text-transform:uppercase; letter-spacing:.6px; margin:22px 0 10px}
+
+/* ── карточки маршрутов ── */
+.cards{display:grid; gap:12px}
+.card{background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; transition:.15s}
+.card:active{transform:scale(.99)}
+.card-top{display:flex; justify-content:space-between; align-items:flex-start; padding:14px 14px 8px}
+.card-name{font-weight:700; font-size:16px}
+.card-region{color:var(--dim); font-size:13px; margin-top:2px}
+.diff{display:flex; gap:3px; padding-top:4px}
+.diff i{width:7px; height:16px; border-radius:3px; background:var(--line)}
+.diff i.on{background:var(--acc)}
+.diff i.on.d3{background:var(--warn)} .diff i.on.d45{background:var(--danger)}
+.card-meta{display:flex; gap:12px; padding:0 14px 12px; color:var(--dim); font-size:13px; flex-wrap:wrap}
+.tag{font-size:11px; padding:2px 8px; border-radius:6px; background:var(--bg3); color:var(--dim)}
+.tag.nosig{background:#3d1111; color:#ff8080}
+.tag.rec{background:#12251a; color:var(--acc)}
+.card-strip{height:64px; position:relative}
+.card-strip canvas{width:100%; height:100%; display:block}
+
+/* ── карта ── */
+.map-wrap{position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--line); background:#10161d}
+.map-wrap canvas{width:100%; display:block}
+.map-wrap.small canvas{height:190px}
+.leaflet-host{width:100%; min-height:180px; background:#10161d}
+.leaflet-container{background:#10161d; font:inherit}
+.poi-icon{font-size:17px; line-height:1; text-shadow:0 0 5px #000, 0 0 3px #000; filter:drop-shadow(0 1px 2px #0008)}
+/* маркеры Leaflet */
+.pin-wrap{background:none; border:none}
+.pin{display:grid; place-items:center; width:26px; height:26px; border-radius:50%;
+  background:#161b22f2; border:1px solid #303a48; box-shadow:0 2px 6px #000a;
+  font-size:14px; color:#e6edf3}
+.pin.start{background:#12251a; border-color:#39d353; color:#39d353; font-size:11px}
+.pin.finish{background:#0d2237; border-color:#58a6ff; color:#58a6ff; font-size:9px}
+.pin.you{width:16px; height:16px; background:#ff4444; border:2px solid #fff;
+  box-shadow:0 0 0 0 #ff444488; animation:pulse 1.8s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 14px #ff444400}100%{box-shadow:0 0 0 0 #ff444400}}
+.you-marker .pin{margin:5px}
+/* тёмные контролы Leaflet */
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#161b22; color:#e6edf3; border:1px solid #2b3441; box-shadow:0 4px 14px #000a}
+.leaflet-popup-content{margin:8px 12px; font-size:13px; line-height:1.4}
+.leaflet-popup-close-button{color:#8b949e}
+.leaflet-tooltip{background:#161b22; color:#e6edf3; border:1px solid #2b3441; box-shadow:none; font-size:12px}
+.leaflet-tooltip-top:before{border-top-color:#2b3441}
+.leaflet-tooltip-bottom:before{border-bottom-color:#2b3441}
+.leaflet-control-zoom a{background:#161b22; color:#e6edf3; border-color:#2b3441}
+.leaflet-control-zoom a:hover{background:#1f2630; color:#fff}
+.leaflet-control-scale-line{background:#0d1117cc; color:#8b949e; border-color:#8b949e; font-size:10px}
+.leaflet-control-attribution{background:#0d1117aa; color:#8b949e; font-size:10px; padding:2px 6px}
+.leaflet-control-attribution a{color:#8b949e}
+.osm-tiles{filter:saturate(.88) brightness(.96) contrast(1.02)}
+.map-legend{position:absolute; left:8px; bottom:8px; display:flex; gap:10px; font-size:11px;
+  background:#0009; padding:4px 10px; border-radius:8px; color:var(--dim)}
+.lg-start{color:var(--acc)} .lg-you{color:#ff4444} .lg-end{color:var(--acc2)}
+
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:8px; margin-top:12px}
+.stat{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:10px 8px; text-align:center}
+.stat b{display:block; font-size:17px}
+.stat span{color:var(--dim); font-size:11px}
+.note{background:var(--bg2); border-left:3px solid var(--warn); padding:10px 12px; border-radius:0 10px 10px 0;
+  font-size:14px; color:#ffd9a0; margin-top:12px}
+.actions{display:grid; gap:10px; margin-top:16px}
+.row{display:flex; gap:10px; margin-top:10px}
+.row .btn{flex:1}
+
+/* ── чек-лист ── */
+.gen-note{background:var(--bg2); border:1px dashed var(--line); border-radius:10px; padding:10px 14px;
+  font-size:13px; color:var(--dim); margin-bottom:14px}
+.cl-cat{margin:18px 0 6px; color:var(--acc2); font-size:13px; text-transform:uppercase; letter-spacing:.5px}
+.cl-item{display:flex; align-items:center; gap:12px; background:var(--bg2); border:1px solid var(--line);
+  border-radius:10px; padding:12px 14px; margin-bottom:8px}
+.cl-item.done{opacity:.5}
+.cl-item.done .cl-text{text-decoration:line-through}
+.cl-box{width:22px; height:22px; border-radius:7px; border:2px solid var(--line); flex:none;
+  display:grid; place-items:center; font-size:13px; color:#04160a}
+.cl-item.done .cl-box{background:var(--acc); border-color:var(--acc)}
+.cl-text{flex:1; font-size:15px}
+.cl-pri{font-size:11px; padding:2px 8px; border-radius:6px; flex:none}
+.pri-must{background:#3d1111; color:#ff8080}
+.pri-should{background:#3d2b00; color:#ffd9a0}
+.pri-have{background:#12251a; color:var(--acc)}
+
+/* ── поход ── */
+.trip-timer{background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius);
+  padding:16px; text-align:center; margin-bottom:14px}
+.timer-label{color:var(--dim); font-size:12px; text-transform:uppercase; letter-spacing:1px}
+.timer-value{font-size:30px; font-weight:800; margin:4px 0}
+.timer-status{color:var(--acc); font-size:13px}
+.trip-timer.overdue{border-color:var(--danger); background:#1c0d0d}
+.trip-timer.overdue .timer-status{color:var(--danger)}
+.overdue-box{background:#1c0d0d; border:1px solid var(--danger); border-radius:var(--radius);
+  padding:14px; margin-top:14px}
+.overdue-box b{color:var(--danger)}
+.overdue-box p{color:var(--dim); font-size:14px}
+
+/* ── SOS ── */
+#screen-sos{background:linear-gradient(#1a0a0a, var(--bg) 60%); text-align:center}
+.sos-title{font-size:56px; font-weight:900; color:var(--danger); letter-spacing:6px; margin:20px 0 4px;
+  text-shadow:0 0 30px #ff444466}
+.sos-coords{font-size:22px; font-weight:700; font-family:ui-monospace,monospace}
+.sos-accuracy{color:var(--dim); font-size:13px; margin-top:4px}
+.sos-channels{display:grid; gap:8px; margin:22px 0; text-align:left}
+.channel{display:flex; justify-content:space-between; background:var(--bg2); border:1px solid var(--line);
+  border-radius:10px; padding:12px 16px; font-size:14px}
+.ch-status{color:var(--dim)} .ch-status.ok{color:var(--acc)} .ch-status.sent{color:var(--acc); font-weight:700}
+.ch-status.wait{color:var(--warn)}
+.sos-result{background:#12251a; border:1px solid var(--acc); border-radius:12px; padding:14px;
+  margin-top:14px; font-size:14px; text-align:left}
+
+/* ── прочее ── */
+.link-box{background:var(--bg2); border:1px solid var(--line); border-radius:10px; padding:12px 14px;
+  font-family:ui-monospace,monospace; font-size:12px; word-break:break-all; color:var(--acc2)}
+.info-box{background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius);
+  padding:14px 16px; margin-top:16px; font-size:14px}
+.info-box p{color:var(--dim); margin:6px 0 0}
+.list-card{background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+.li{display:flex; justify-content:space-between; padding:15px 16px; border-bottom:1px solid var(--line); font-size:15px}
+.li:last-child{border-bottom:none}
+.li:active{background:var(--bg3)}
+.code{background:#010409; border:1px solid var(--line); border-radius:10px; padding:12px;
+  font-size:12px; overflow-x:auto; white-space:pre; color:#7ee787; font-family:ui-monospace,monospace}
+code{font-family:ui-monospace,monospace; color:#7ee787}
+
+/* ── таббар ── */
+#tabbar{position:fixed; left:0; right:0; bottom:0; display:flex; background:#0d1117f2;
+  border-top:1px solid var(--line); padding-bottom:var(--safe); backdrop-filter:blur(8px); z-index:10}
+.tab{flex:1; background:none; border:none; padding:10px 0 12px; color:var(--dim); font-size:11px;
+  display:flex; flex-direction:column; align-items:center; gap:3px}
+.tab .ti{font-size:19px; filter:grayscale(1); opacity:.7}
+.tab.active{color:var(--acc)}
+.tab.active .ti{filter:none; opacity:1}

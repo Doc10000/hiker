@@ -1,0 +1,13 @@
+{
+  "appId": "kz.hiker.app",
+  "appName": "Горный хайкер",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": true
+  },
+  "plugins": {
+    "Geolocation": {
+      "permission": "Геолокация нужна, чтобы показывать ваш прогресс на маршруте и отправлять спасателям координаты при SOS"
+    }
+  }
+}

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Горный хайкер</title>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<!-- ══════════ ОНБОРДИНГ ══════════ -->
+<section id="screen-onboarding" class="screen">
+  <div class="ob-progress"><span id="ob-dot-0" class="dot active"></span><span id="ob-dot-1" class="dot"></span><span id="ob-dot-2" class="dot"></span><span id="ob-dot-3" class="dot"></span><span id="ob-dot-4" class="dot"></span></div>
+
+  <div class="ob-step" data-step="0">
+    <h1>Горный хайкер</h1>
+    <p class="sub">Офлайн-компаньон для походов по Казахстану. Расскажите о себе — и рекомендации подберутся под ваш уровень.</p>
+    <label class="field">Как вас зовут?<input id="ob-name" type="text" placeholder="Имя" autocomplete="name"></label>
+  </div>
+
+  <div class="ob-step" data-step="1" hidden>
+    <h2>Сколько походов вы сделали<br>за последний год?</h2>
+    <div class="choices" data-key="hikes">
+      <button class="choice" data-val="0">Ни одного</button>
+      <button class="choice" data-val="1">1–3</button>
+      <button class="choice" data-val="2">4–10</button>
+      <button class="choice" data-val="3">Более 10</button>
+    </div>
+  </div>
+
+  <div class="ob-step" data-step="2" hidden>
+    <h2>Какой у вас уровень?</h2>
+    <div class="choices" data-key="level">
+      <button class="choice" data-val="1">Новичок — горы впервые</button>
+      <button class="choice" data-val="2">Опытный — хожу регулярно</button>
+      <button class="choice" data-val="3">Профи / гид</button>
+    </div>
+  </div>
+
+  <div class="ob-step" data-step="3" hidden>
+    <h2>Что у вас уже есть?</h2>
+    <div class="choices multi" data-key="gear">
+      <button class="choice" data-val="tent">Палатка</button>
+      <button class="choice" data-val="bag">Спальник</button>
+      <button class="choice" data-val="poles">Треккинговые палки</button>
+      <button class="choice" data-val="aid">Аптечка</button>
+      <button class="choice" data-val="bank">Пауэрбанк</button>
+      <button class="choice" data-val="nav">Навигатор / часы</button>
+      <button class="choice" data-val="none">Почти ничего</button>
+    </div>
+  </div>
+
+  <div class="ob-step" data-step="4" hidden>
+    <h2>Кому сообщить,<br>если вы не вернётесь?</h2>
+    <label class="field">Имя близкого<input id="ob-contact-name" type="text" placeholder="Мама, друг, напарник"></label>
+    <label class="field">Телефон<input id="ob-contact-phone" type="tel" placeholder="+7 700 000 00 00"></label>
+    <p class="hint">Мы напомним вам отчитаться по таймеру похода, а при тревоге — отправим ему вашу метку.</p>
+  </div>
+
+  <div class="ob-nav">
+    <button id="ob-back" class="btn ghost" hidden>Назад</button>
+    <button id="ob-next" class="btn primary">Далее</button>
+  </div>
+</section>
+
+<!-- ══════════ ГЛАВНАЯ: МАРШРУТЫ ══════════ -->
+<section id="screen-home" class="screen" hidden>
+  <header class="app-header">
+    <div>
+      <div class="greet" id="home-greet">Привет</div>
+      <div class="badge-row"><span class="chip ok" id="home-offline">✓ Работает офлайн</span><span class="chip" id="home-level"></span></div>
+    </div>
+    <button class="icon-btn" id="home-profile" title="Профиль">⚙</button>
+  </header>
+
+  <div class="banner" id="home-banner" hidden></div>
+
+  <h3 class="section-title">Рекомендовано по вашему профилю</h3>
+  <div id="routes-recommended" class="cards"></div>
+
+  <h3 class="section-title">Все маршруты</h3>
+  <div id="routes-all" class="cards"></div>
+</section>
+
+<!-- ══════════ МАРШРУТ ══════════ -->
+<section id="screen-route" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" data-nav="home">←</button>
+    <div class="route-title" id="route-name">Маршрут</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="map-wrap"><canvas id="route-map"></canvas>
+    <div class="map-legend"><span class="lg-start">● старт</span><span class="lg-you" id="map-you" hidden>● вы</span><span class="lg-end">● финиш</span></div>
+  </div>
+
+  <div class="stats" id="route-stats"></div>
+  <div class="note" id="route-note"></div>
+  <div id="route-poi"></div>
+  <div class="actions">
+    <button class="btn primary big" id="route-start">Начать поход</button>
+    <button class="btn ghost big" id="route-checklist">Что взять?</button>
+  </div>
+</section>
+
+<!-- ══════════ ЧЕК-ЛИСТ ══════════ -->
+<section id="screen-checklist" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" data-nav="route">←</button>
+    <div class="route-title">Снаряжение</div>
+    <div style="width:40px"></div>
+  </header>
+  <div class="gen-note" id="cl-gen-note"></div>
+  <div id="cl-list"></div>
+  <div class="actions"><button class="btn ghost big" id="cl-share">Отправить список близким</button></div>
+</section>
+
+<!-- ══════════ АКТИВНЫЙ ПОХОД ══════════ -->
+<section id="screen-trip" class="screen" hidden>
+  <header class="app-header sticky">
+    <div class="route-title" id="trip-name">Поход</div>
+    <span class="chip live" id="trip-live" hidden>● идёт</span>
+  </header>
+
+  <div class="trip-timer">
+    <div class="timer-label">Вернусь до</div>
+    <div class="timer-value" id="trip-deadline">—</div>
+    <div class="timer-status" id="trip-status">Таймер отчёта активен</div>
+  </div>
+
+  <div class="map-wrap small"><canvas id="trip-map"></canvas></div>
+
+  <div class="stats" id="trip-stats"></div>
+
+  <div class="actions">
+    <button class="btn danger big" id="trip-sos">SOS — вызвать помощь</button>
+    <button class="btn ghost big" id="trip-report">✓ Я вернулся</button>
+    <button class="btn link" id="trip-track" hidden>Отправить метку близким</button>
+  </div>
+
+  <div class="overdue-box" id="trip-overdue" hidden>
+    <b>⚠ Срок возврата прошёл</b>
+    <p id="trip-overdue-text"></p>
+    <div class="row">
+      <button class="btn primary" id="trip-overdue-sms">Отправить SMS близкому</button>
+      <button class="btn ghost" id="trip-overdue-ok">Всё в порядке, отмена</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ SOS ══════════ -->
+<section id="screen-sos" class="screen sos" hidden>
+  <h1 class="sos-title">SOS</h1>
+  <div class="sos-coords" id="sos-coords">Определяем координаты…</div>
+  <div class="sos-accuracy" id="sos-accuracy"></div>
+
+  <div class="sos-channels" id="sos-channels">
+    <div class="channel" data-ch="sms"><span class="ch-name">SMS близкому</span><span class="ch-status">готов</span></div>
+    <div class="channel" data-ch="call"><span class="ch-name">Звонок</span><span class="ch-status">готов</span></div>
+    <div class="channel" data-ch="link"><span class="ch-name">Ссылка-метка</span><span class="ch-status">готов</span></div>
+    <div class="channel" data-ch="mchs"><span class="ch-name">Шлюз МЧС</span><span class="ch-status">в очереди</span></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn danger big" id="sos-send">Отправить SOS-метку</button>
+    <button class="btn primary big" id="sos-call">Позвонить близкому</button>
+    <button class="btn ghost big" id="sos-back">Назад к походу</button>
+  </div>
+  <div class="sos-result" id="sos-result" hidden></div>
+</section>
+
+<!-- ══════════ БЛИЗКИЕ ══════════ -->
+<section id="screen-family" class="screen" hidden>
+  <header class="app-header"><div class="route-title">Мои близкие</div></header>
+
+  <label class="field">Имя<input id="fam-name" type="text" placeholder="Кому отправлять метку"></label>
+  <label class="field">Телефон<input id="fam-phone" type="tel" placeholder="+7 700 000 00 00"></label>
+  <button class="btn primary big" id="fam-save">Сохранить контакт</button>
+
+  <h3 class="section-title">Ссылка-метка текущего похода</h3>
+  <div class="link-box" id="fam-link">Поход не начат — метка появится при старте</div>
+  <div class="row">
+    <button class="btn ghost" id="fam-copy">Копировать</button>
+    <button class="btn ghost" id="fam-sms">Отправить SMS</button>
+  </div>
+
+  <label class="field" style="margin-top:18px">Адрес страницы метки (по умолчанию — локальная страница share.html; на проде — https://hiker.kz/t/)
+    <input id="fam-base" type="text" placeholder="share.html#"></label>
+  <button class="btn ghost" id="fam-base-save">Сохранить адрес</button>
+
+  <div class="info-box">
+    <b>Как это работает</b>
+    <p>Близкий открывает ссылку в браузере — видит вас на карте: последняя точка, время сигнала, статус. Ссылка содержит все данные похода, поэтому открывается <b>без сервера и без интернета у вас</b>.</p>
+  </div>
+</section>
+
+<!-- ══════════ ЕЩЁ ══════════ -->
+<section id="screen-more" class="screen" hidden>
+  <header class="app-header"><div class="route-title">Ещё</div></header>
+
+  <div class="list-card">
+    <div class="li" data-nav="family"><span>👥 Мои близкие</span><span>›</span></div>
+    <div class="li" data-nav="history"><span>🥾 История походов</span><span>›</span></div>
+    <div class="li" data-nav="mchs"><span>🏛 Интеграция со службами спасения</span><span>›</span></div>
+    <div class="li" id="more-reset"><span>↺ Пройти онбординг заново</span><span>›</span></div>
+  </div>
+
+  <div class="info-box">
+    <b>Офлайн-режим</b>
+    <p>Карта, чек-листы, SOS и метка работают без интернета. GPS-сигнал принимается и без сети — данные копятся локально и отправляются при появлении связи.</p>
+  </div>
+</section>
+
+<!-- ══════════ ИСТОРИЯ ══════════ -->
+<section id="screen-history" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" data-nav="more">←</button>
+    <div class="route-title">История походов</div>
+    <div style="width:40px"></div>
+  </header>
+  <div id="hist-list" class="cards"></div>
+</section>
+
+<!-- ══════════ МЧС ══════════ -->
+<section id="screen-mchs" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" data-nav="more">←</button>
+    <div class="route-title">Службы спасения</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="info-box">
+    <b>Единый интерфейс событий</b>
+    <p>Все тревоги проходят через один модуль <code>IncidentService</code>: тип, координаты, маршрут, время, статус. Канал «родственник» работает сейчас; канал «МЧС/112» подключается одним эндпоинтом — код клиента готов.</p>
+  </div>
+
+  <h3 class="section-title">Формат события</h3>
+  <pre class="code" id="mchs-sample"></pre>
+
+  <h3 class="section-title">Очередь инцидентов</h3>
+  <div id="mchs-queue"></div>
+
+  <div class="actions"><button class="btn ghost big" id="mchs-demo">Создать демо-инцидент</button></div>
+</section>
+
+<!-- нижняя навигация -->
+<nav id="tabbar" hidden>
+  <button class="tab" data-nav="home"><span class="ti">⛰️</span>Маршруты</button>
+  <button class="tab" data-nav="trip"><span class="ti">🥾</span>Поход</button>
+  <button class="tab" data-nav="family"><span class="ti">👥</span>Близкие</button>
+  <button class="tab" data-nav="more"><span class="ti">⋯</span>Ещё</button>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/data.js"></script>
+<script src="js/map.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

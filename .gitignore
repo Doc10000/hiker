@@ -1,0 +1,21 @@
+# зависимости
+node_modules/
+
+# артефакты Android-сборки
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+*.apk
+
+# временные дампы UI-тестов
+ui-*.txt
+ui*.xml
+emu-screen.png
+
+# системное
+*.log
+.DS_Store
+Thumbs.db
+__pycache__/
