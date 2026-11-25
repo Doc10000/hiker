@@ -165,8 +165,20 @@ const MapRender = (() => {
 
     let st = canvas._lm;
     if (!st) {
-      const map = L.map(host, { zoomControl: false, scrollWheelZoom: false, attributionControl: true, zoomSnap: 0.5 });
-      const tiles = L.tileLayer(TILE_URL, { maxZoom: 18, attribution: TILE_ATTR, className: 'osm-tiles' }).addTo(map);
+      const map = L.map(host, {
+        zoomControl: false,
+        attributionControl: true,
+        // управление пальцем/мышью
+        dragging: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
+        keyboard: true,
+        scrollWheelZoom: false,   // колесо не ворует скролл страницы; зум — кнопками и pinch
+        zoomSnap: 0.5,
+        zoomDelta: 0.5
+      });
+      const tiles = L.tileLayer(TILE_URL, { maxZoom: 19, maxNativeZoom: 19, attribution: TILE_ATTR, className: 'osm-tiles' }).addTo(map);
       let errors = 0;
       tiles.on('tileerror', () => {
         errors++;
