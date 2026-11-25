@@ -500,18 +500,60 @@ function updateClProgress() {
   const must = mustKeys();
   const done = must.filter(k => clState[k]).length;
   const all = must.length;
+  const ack = !!DB.get('recsAck', false);
   const pct = all ? Math.round(done / all * 100) : 100;
-  bar.innerHTML = `<div class="prog-row"><span>Обязательное снаряжение</span><b>${done} / ${all}</b></div>
-    <div class="prog-track"><i style="width:${pct}%"></i></div>` +
-    (done < all
-      ? `<div class="hint" style="margin-top:7px">Отметьте, что собрали — осталось ${all - done}.</div>`
-      : `<div class="hint" style="margin-top:7px;color:var(--acc)">✓ Всё обязательное собрано</div>`);
 
-  btn.disabled = done < all;
-  btn.textContent = done < all
-    ? 'Собрано не всё'
+  let hint;
+  if (!ack) hint = 'Сначала отметьте «Ознакомился с рекомендациями».';
+  else if (done < all) hint = `Отметьте, что собрали — осталось ${all - done}.`;
+  else hint = '✓ Рекомендации приняты, критичное собрано';
+
+  bar.innerHTML = `<div class="prog-row"><span>Обязательное снаряжение</span><b>${done} / ${all}</b></div>
+    <div class="prog-track"><i style="width:${pct}%"></i></div>
+    <div class="hint" style="margin-top:7px${(!ack || done === all) ? ';color:var(--acc)' : ''}">${hint}</div>`;
+
+  btn.disabled = done < all || !ack;
+  btn.textContent = (done < all || !ack)
+    ? 'Ещё не всё готово'
     : (pendingAction === 'plan' ? 'Дальше — дата похода' : 'Дальше — уведомить близких');
 }
+
+/* ───────── единое окно рекомендаций (внутри списка снаряжения) ───────── */
+function renderRecs(r) {
+  const info = levelInfo();
+  const p = DB.get('profile', {});
+  const risk = assessRisk(r);
+  const contacts = getContacts();
+  const notif = contacts.filter(c => c.notify !== false);
+  const fit = ROUTES.filter(x => x.difficulty <= info.level).slice(0, 3);
+
+  const items = [
+    ['🎯', `Ваш уровень: <b>${levelLabel(info.level)}</b> — ${info.done} ${plural(info.done)}, ${info.km} км пройдено`],
+    ['🗺', fit.length
+      ? `Подходят по уровню: <b>${fit.map(x => esc(x.name)).join('</b>, <b>')}</b>`
+      : 'Пока нет маршрутов вашего уровня — пройдите больше походов'],
+    ['⛰', `Идёте: <b>${esc(r.name)}</b> — ${r.days} дн., ${r.alt} м, сложность ${r.difficulty}/5, сезон ${r.season}`],
+    ['⚠', `Оценка риска: <b>${risk.cat.t.toLowerCase()}</b> (${risk.score}/100)` +
+      (risk.score >= 50 ? ' — перед стартом предложим маршрут полегче' : '')],
+    ['⛑', 'Правила: идите группой, разворот — нормально, прогноз погоды проверьте утром'],
+    ['📡', r.noSignal
+      ? 'На маршруте <b>нет связи</b> — карта, метка и SOS работают офлайн'
+      : 'Связь есть, но метку близким оставьте всё равно'],
+    ['👥', notif.length
+      ? `Тревогу получат: <b>${notif.map(c => esc(c.name)).join('</b>, <b>')}</b>`
+      : '<b>Контакт не задан</b> — добавьте в разделе «Близкие»'],
+    ['⏰', 'Не отметился до срока возврата — приложение <b>само</b> отправит SMS близким']
+  ];
+
+  document.getElementById('recs-body').innerHTML = items.map(([ic, t]) =>
+    `<div class="recs-item"><span class="ri">${ic}</span><div>${t}</div></div>`).join('');
+  document.getElementById('recs-ack').checked = !!DB.get('recsAck', false);
+}
+
+document.getElementById('recs-ack').addEventListener('change', e => {
+  DB.set('recsAck', !!e.target.checked);
+  updateClProgress();
+});
 
 function renderChecklist(r, mode) {
   clMode = mode || 'view';
@@ -539,13 +581,14 @@ function renderChecklist(r, mode) {
       const key = c.name + '|' + it.t;
       const done = clState[key];
       const priCls = it.pri === 'must' ? 'pri-must' : it.pri === 'have' ? 'pri-have' : 'pri-should';
-      const priTxt = it.pri === 'must' ? 'взять' : it.pri === 'have' ? 'есть' : 'желательно';
+      const priTxt = it.pri === 'must' ? 'критично' : it.pri === 'have' ? 'есть' : 'рекомендуется';
       return `<div class="cl-item ${done ? 'done' : ''}" data-key="${key}">
         <div class="cl-box">${done ? '✓' : ''}</div>
         <div class="cl-text">${esc(it.t)}</div>
         <span class="cl-pri ${priCls}">${priTxt}</span></div>`;
     }).join('')}`).join('');
 
+  renderRecs(r);
   updateClProgress();
 }
 document.getElementById('cl-list').addEventListener('click', e => {

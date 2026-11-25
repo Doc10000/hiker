@@ -350,6 +350,38 @@ code{font-family:ui-monospace,monospace; color:#7ee787}
 .tab.active{color:var(--acc); background:#3ddc7f14}
 .tab.active .ti{filter:none; opacity:1; transform:translateY(-1px)}
 
+/* ── единое окно рекомендаций ── */
+.recs-box{
+  background:linear-gradient(180deg,#161d25,#12181e); border:1px solid var(--line);
+  border-radius:16px; padding:15px 16px; margin-bottom:16px; box-shadow:var(--shadow);
+}
+.recs-head{
+  font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.9px;
+  color:var(--acc2); margin-bottom:10px; display:flex; align-items:center; gap:9px;
+}
+.recs-head::before{content:''; width:3px; height:13px; border-radius:2px; background:var(--grad)}
+.recs-item{
+  display:flex; gap:10px; align-items:flex-start; font-size:14px; line-height:1.45;
+  padding:8px 0; border-bottom:1px solid #ffffff08;
+}
+.recs-item:last-child{border-bottom:none}
+.recs-item .ri{width:22px; flex:none; text-align:center; font-size:14px}
+.recs-item b{color:var(--fg)}
+.recs-ack{
+  display:flex; align-items:center; gap:12px; margin-top:14px; padding:13px 14px;
+  background:#ffffff08; border:1px solid var(--line); border-radius:12px;
+  cursor:pointer; transition:.15s; position:relative;
+}
+.recs-ack:has(input:checked){background:#12251a; border-color:var(--acc); box-shadow:0 0 0 1px var(--acc) inset}
+.recs-ack input{position:absolute; opacity:0; width:0; height:0; margin:0}
+.recs-check{
+  width:24px; height:24px; border-radius:8px; border:2px solid #33404f; flex:none;
+  display:grid; place-items:center; transition:.15s;
+}
+.recs-ack input:checked + .recs-check{background:var(--grad); border-color:transparent}
+.recs-ack input:checked + .recs-check::after{content:'✓'; color:#06231a; font-weight:900; font-size:15px}
+.recs-text{font-size:15px; font-weight:600}
+
 /* ── риск, прогресс, план ── */
 .risk-gauge{
   background:linear-gradient(180deg,#161d25,#12181e); border:1px solid var(--line);
