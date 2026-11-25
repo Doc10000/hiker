@@ -116,6 +116,98 @@ function smsResultText(res) {
   return 'Не отправлено — проверьте разрешение SMS';
 }
 
+/* ───────── уровень, риск, планы ───────── */
+function plural(n, forms) {
+  const f = forms || ['поход', 'похода', 'походов'];
+  const n10 = n % 10, n100 = n % 100;
+  if (n10 === 1 && n100 !== 11) return f[0];
+  if (n10 >= 2 && n10 <= 4 && (n100 < 10 || n100 >= 20)) return f[1];
+  return f[2];
+}
+
+function tripStats() {
+  const hist = DB.get('history', []);
+  const km = hist.reduce((s, h) => s + ((rById(h.routeId) || {}).km || 0), 0);
+  const maxDiff = hist.reduce((m, h) => Math.max(m, (rById(h.routeId) || {}).difficulty || 0), 0);
+  return { done: hist.length, km: Math.round(km), maxDiff };
+}
+
+/** Уровень = заявленный опыт + фактически пройденные походы */
+function effectiveLevel() {
+  const p = DB.get('profile', {});
+  const st = tripStats();
+  const reported = [0, 1, 4, 10][p.hikes == null ? 0 : p.hikes] || 0;
+  const score = reported + st.done * 1.5;
+  let lvl = score >= 12 ? 3 : score >= 4 ? 2 : 1;
+  if (st.maxDiff >= 4) lvl = 3;
+  else if (st.maxDiff >= 3 && lvl < 2) lvl = 2;
+  // походов пока нет — не занижаем уровень, который человек заявил сам
+  if (!st.done && (p.level || 1) > lvl) lvl = p.level || 1;
+  return lvl;
+}
+function levelInfo() {
+  const st = tripStats();
+  return { level: effectiveLevel(), done: st.done, km: st.km, maxDiff: st.maxDiff };
+}
+
+function riskCat(score) {
+  if (score < 25) return { i: 0, t: 'Низкий', cls: 'ok' };
+  if (score < 50) return { i: 1, t: 'Средний', cls: 'mid' };
+  if (score < 75) return { i: 2, t: 'Высокий', cls: 'high' };
+  return { i: 3, t: 'Очень высокий', cls: 'crit' };
+}
+
+/** Оценка риска маршрута под конкретный профиль */
+function assessRisk(r) {
+  const p = DB.get('profile', {});
+  const gear = p.gear || [];
+  const lvl = effectiveLevel();
+  const reasons = [];
+  let score = 0;
+
+  if (r.difficulty > lvl) { score += 35; reasons.push({ t: `Маршрут сложнее вашего уровня (${r.difficulty} из 5 при уровне ${lvl})`, s: 35 }); }
+  else if (r.difficulty === lvl) { score += 15; reasons.push({ t: 'Маршрут на пределе вашего уровня', s: 15 }); }
+
+  if (r.alt > 3000) { score += 20; reasons.push({ t: `Высота ${r.alt} м — риск горной болезни`, s: 20 }); }
+  else if (r.alt > 2600) { score += 10; reasons.push({ t: `Высота ${r.alt} м`, s: 10 }); }
+
+  if (r.noSignal) { score += 15; reasons.push({ t: 'Нет мобильной связи на всём треке', s: 15 }); }
+  if (r.days >= 3) { score += 12; reasons.push({ t: `Многодневка: ${r.days} дня без инфраструктуры`, s: 12 }); }
+  else if (r.days >= 2) { score += 6; reasons.push({ t: `Ночёвка на маршруте (${r.days} дня)`, s: 6 }); }
+
+  if (r.days >= 2 && !gear.includes('tent')) { score += 12; reasons.push({ t: 'Не отмечена палатка', s: 12 }); }
+  if (r.days >= 2 && !gear.includes('bag')) { score += 10; reasons.push({ t: 'Не отмечен спальник', s: 10 }); }
+  if (!gear.includes('aid')) { score += 8; reasons.push({ t: 'Не отмечена аптечка', s: 8 }); }
+  if (r.noSignal && !gear.includes('bank')) { score += 8; reasons.push({ t: 'Нет пауэрбанка при отсутствии связи', s: 8 }); }
+  if (r.difficulty >= 3 && !gear.includes('nav')) { score += 6; reasons.push({ t: 'Нет навигатора/часов с треком', s: 6 }); }
+  if (gear.includes('none')) { score += 10; reasons.push({ t: 'В онбординге отмечено «почти ничего»', s: 10 }); }
+  if (!notifyPhones().length) { score += 10; reasons.push({ t: 'Не указан контакт для уведомления', s: 10 }); }
+
+  score = Math.min(100, score);
+  return { score, reasons: reasons.sort((a, b) => b.s - a.s), cat: riskCat(score), level: lvl };
+}
+
+/** Маршруты полегче — если риск выше среднего */
+function altRoutes(r) {
+  const lvl = effectiveLevel();
+  return ROUTES
+    .filter(x => x.id !== r.id && x.difficulty <= lvl)
+    .map(x => ({ r: x, risk: assessRisk(x).score }))
+    .sort((a, b) => a.risk - b.risk || b.r.difficulty - a.r.difficulty)
+    .slice(0, 2);
+}
+
+/* запланированные походы */
+function getPlanned() { return DB.get('planned', []); }
+function setPlanned(l) { DB.set('planned', l); }
+function addPlanned(routeId, at) {
+  const l = getPlanned();
+  l.push({ id: 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 4), routeId, at, createdAt: Date.now() });
+  l.sort((a, b) => a.at - b.at);
+  setPlanned(l);
+}
+function removePlanned(id) { setPlanned(getPlanned().filter(x => x.id !== id)); }
+
 /* ───────── навигация ───────── */
 const screens = [...document.querySelectorAll('.screen')];
 const tabbar = document.getElementById('tabbar');
@@ -239,22 +331,73 @@ document.querySelectorAll('.choices').forEach(g => {
 /* ───────── главная ───────── */
 function renderHome() {
   const p = DB.get('profile', {});
+  const info = levelInfo();
   document.getElementById('home-greet').textContent = 'Привет, ' + (p.name || 'хайкер');
-  document.getElementById('home-level').textContent = levelLabel(p.level) +
-    (p.hikes ? ` · ${['0', '1–3', '4–10', '10+'][p.hikes]} походов/год` : '');
+  document.getElementById('home-level').textContent =
+    `Уровень ${levelLabel(info.level)} · ${info.done} ${plural(info.done)} · ${info.km} км`;
 
-  const rec = ROUTES.filter(r => r.difficulty <= (p.level || 1));
-  const rest = ROUTES.filter(r => r.difficulty > (p.level || 1));
+  const rec = ROUTES.filter(r => r.difficulty <= info.level);
+  const rest = ROUTES.filter(r => r.difficulty > info.level);
   fill('routes-recommended', rec);
   fill('routes-all', rest);
+  renderPlanned();
 
   const banner = document.getElementById('home-banner');
   const t = DB.get('trip', null);
   if (t && t.active) {
     banner.hidden = false;
-    banner.innerHTML = `<b>Идёт поход:</b> ${rById(t.routeId).name} — <a href="#" data-nav="trip" style="color:var(--acc2)">открыть</a>`;
+    banner.innerHTML = `<b>Идёт поход:</b> ${esc(rById(t.routeId).name)} — <a href="#" data-nav="trip" style="color:var(--acc2)">открыть</a>`;
   } else banner.hidden = true;
 }
+
+/* ───────── запланированные походы на главной ───────── */
+function renderPlanned() {
+  const list = getPlanned();
+  const title = document.getElementById('planned-title');
+  const el = document.getElementById('planned-list');
+  title.hidden = !list.length;
+  if (!list.length) { el.innerHTML = ''; return; }
+
+  const now = Date.now();
+  el.innerHTML = list.map(pl => {
+    const r = rById(pl.routeId);
+    const d = new Date(pl.at);
+    const left = pl.at - now;
+    const when = d.toLocaleDateString('ru', { day: 'numeric', month: 'long' }) + ', ' +
+      d.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+    const leftTxt = left > 0
+      ? (left >= 864e5 ? 'через ' + Math.round(left / 864e5) + ' дн.' : 'через ' + Math.max(1, Math.round(left / 36e5)) + ' ч')
+      : 'время пришло';
+    const risk = r ? assessRisk(r) : null;
+    const tagCls = !risk ? '' : risk.cat.i >= 2 ? 'nosig' : risk.cat.i === 1 ? '' : 'rec';
+    return `<div class="card">
+      <div class="card-top">
+        <div>
+          <div class="card-name">${esc(r ? r.name : pl.routeId)}</div>
+          <div class="card-region">${when} · ${leftTxt}</div>
+        </div>
+        ${risk ? `<span class="tag ${tagCls}">риск: ${risk.cat.t.toLowerCase()}</span>` : ''}
+      </div>
+      <div class="card-meta">
+        ${r ? `<span>⏱ ${r.days} д</span><span>📏 ${r.km} км</span><span>⛰ ${r.alt} м</span>` : ''}
+      </div>
+      <div class="card-actions">
+        <button class="btn ghost mini" data-plan-open="${pl.id}">Открыть</button>
+        <button class="btn link mini" data-plan-del="${pl.id}">Удалить</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+document.getElementById('planned-list').addEventListener('click', e => {
+  const open = e.target.closest('[data-plan-open]');
+  if (open) {
+    const pl = getPlanned().find(x => x.id === open.dataset.planOpen);
+    if (pl) { currentRoute = rById(pl.routeId); nav('route'); }
+    return;
+  }
+  const del = e.target.closest('[data-plan-del]');
+  if (del) { removePlanned(del.dataset.planDel); renderPlanned(); toast('Удалено из планов'); }
+});
 function fill(elId, list) {
   const el = document.getElementById(elId);
   if (!list.length) { el.innerHTML = `<div class="hint">Нет — уровней выше вашего профиля</div>`; return; }
@@ -268,13 +411,13 @@ function fill(elId, list) {
       <div class="card-meta">
         <span>⏱ ${r.days} д</span><span>📏 ${r.km} км</span><span>⛰ ${r.alt} м</span>
         ${r.noSignal ? '<span class="tag nosig">нет связи</span>' : ''}
-        ${r.difficulty <= (DB.get('profile', {}).level || 1) ? '<span class="tag rec">рекомендовано</span>' : ''}
+        ${r.difficulty <= effectiveLevel() ? '<span class="tag rec">рекомендовано</span>' : ''}
       </div>
       <div class="card-strip"><canvas data-strip="${r.id}"></canvas></div>
     </div>`).join('');
   list.forEach(r => {
     const c = el.querySelector(`[data-strip="${r.id}"]`);
-    requestAnimationFrame(() => MapRender.draw(c, r.track, { compact: true }));
+    requestAnimationFrame(() => MapRender.draw(c, r.path || r.track, { compact: true }));
   });
 }
 document.addEventListener('click', e => {
@@ -293,8 +436,16 @@ function showRoute(r) {
   const t = DB.get('trip', null);
   const you = (t && t.active && t.routeId === r.id) ? lastPos(t) : null;
   const youAcc = (you && t.pos) ? t.pos.acc : 0;
-  MapRender.draw(canvas, r.track, { you, youAcc, poi: r.poi });
+  MapRender.draw(canvas, r.path || r.track, { you, youAcc, poi: r.poi, trails: r.trailPaths });
   renderPoi(r);
+
+  // уровень и риск — сразу на карточке маршрута
+  const info = levelInfo();
+  const risk = assessRisk(r);
+  document.getElementById('route-badges').innerHTML =
+    `<span class="chip">Ваш уровень: ${levelLabel(info.level)}</span>
+     <span class="chip ${risk.cat.i >= 2 ? 'warn' : risk.cat.i === 1 ? '' : 'ok'}">Риск: ${risk.cat.t}</span>
+     <span class="chip">Пройдено ${info.done} ${plural(info.done)}</span>`;
 
   document.getElementById('route-stats').innerHTML = `
     <div class="stat"><b>${r.days}</b><span>дней</span></div>
@@ -307,6 +458,9 @@ function showRoute(r) {
   document.getElementById('route-start').textContent =
     active ? (t.routeId === r.id ? 'Продолжить поход' : 'Идёт другой поход') : 'Начать поход';
   document.getElementById('route-start').disabled = active && t.routeId !== r.id;
+  const planBtn = document.getElementById('route-plan');
+  planBtn.hidden = !!active;
+  planBtn.disabled = !!active;
 }
 function renderPoi(r) {
   const el = document.getElementById('route-poi');
@@ -318,46 +472,110 @@ function renderPoi(r) {
   }).join('') + `<div class="hint" style="margin-top:6px">Данные инфраструктуры — демо; подтверждаются с парками и гидами.</div>`;
 }
 document.getElementById('route-start').onclick = () => startTrip(currentRoute);
-document.getElementById('route-checklist').onclick = () => { renderChecklist(currentRoute); nav('checklist'); };
+document.getElementById('route-plan').onclick = () => planTrip(currentRoute);
+document.getElementById('route-checklist').onclick = () => { renderChecklist(currentRoute, 'view'); nav('checklist'); };
 
-/* ───────── чек-лист ───────── */
+/* ───────── чек-лист (обязательный перед стартом) ───────── */
 let clState = {}; // {itemKey:true}
-function renderChecklist(r) {
-  const p = DB.get('profile', {});
-  const cats = buildChecklist(p, r);
-  clState = DB.get('cl_' + r.id, {});
-  document.getElementById('cl-gen-note').innerHTML =
-    `Составлено под ваш профиль: <b>${levelLabel(p.level)}</b>, маршрут «${r.name}» (${r.days} дн., ${r.alt} м), сезон: ${r.season}. Работает офлайн.`;
+let clCats = [];
+let clRoute = null;
+let clMode = 'view';
 
-  document.getElementById('cl-list').innerHTML = cats.map(c => `
+function mustKeys() {
+  const out = [];
+  clCats.forEach(c => c.items.forEach(it => {
+    if (it.pri === 'must') out.push(c.name + '|' + it.t);
+  }));
+  return out;
+}
+
+function updateClProgress() {
+  const bar = document.getElementById('cl-progress');
+  const btn = document.getElementById('cl-next');
+  const gate = clMode === 'gate';
+  bar.hidden = !gate;
+  btn.hidden = !gate;
+  if (!gate) return;
+
+  const must = mustKeys();
+  const done = must.filter(k => clState[k]).length;
+  const all = must.length;
+  const pct = all ? Math.round(done / all * 100) : 100;
+  bar.innerHTML = `<div class="prog-row"><span>Обязательное снаряжение</span><b>${done} / ${all}</b></div>
+    <div class="prog-track"><i style="width:${pct}%"></i></div>` +
+    (done < all
+      ? `<div class="hint" style="margin-top:7px">Отметьте, что собрали — осталось ${all - done}.</div>`
+      : `<div class="hint" style="margin-top:7px;color:var(--acc)">✓ Всё обязательное собрано</div>`);
+
+  btn.disabled = done < all;
+  btn.textContent = done < all
+    ? 'Собрано не всё'
+    : (pendingAction === 'plan' ? 'Дальше — дата похода' : 'Дальше — уведомить близких');
+}
+
+function renderChecklist(r, mode) {
+  clMode = mode || 'view';
+  clRoute = r;
+  const p = DB.get('profile', {});
+  clCats = buildChecklist(Object.assign({}, p, { level: effectiveLevel() }), r);
+  clState = DB.get('cl_' + r.id, {});
+
+  // то, что уже есть в рюкзаке, считаем собранным
+  let changed = false;
+  clCats.forEach(c => c.items.forEach(it => {
+    const key = c.name + '|' + it.t;
+    if (it.pri === 'have' && clState[key] === undefined) { clState[key] = true; changed = true; }
+  }));
+  if (changed) DB.set('cl_' + r.id, clState);
+
+  const info = levelInfo();
+  document.getElementById('cl-gen-note').innerHTML =
+    (clMode === 'gate' ? '<b>Обязательный шаг:</b> отметьте, что положили в рюкзак — без этого не выходим в поход.<br>' : '') +
+    `Составлено под уровень <b>${levelLabel(info.level)}</b>, маршрут «${esc(r.name)}» (${r.days} дн., ${r.alt} м), сезон: ${r.season}. Работает офлайн.`;
+
+  document.getElementById('cl-list').innerHTML = clCats.map(c => `
     <div class="cl-cat">${c.name}</div>
-    ${c.items.map((it, i) => {
+    ${c.items.map(it => {
       const key = c.name + '|' + it.t;
       const done = clState[key];
       const priCls = it.pri === 'must' ? 'pri-must' : it.pri === 'have' ? 'pri-have' : 'pri-should';
       const priTxt = it.pri === 'must' ? 'взять' : it.pri === 'have' ? 'есть' : 'желательно';
       return `<div class="cl-item ${done ? 'done' : ''}" data-key="${key}">
         <div class="cl-box">${done ? '✓' : ''}</div>
-        <div class="cl-text">${it.t}</div>
+        <div class="cl-text">${esc(it.t)}</div>
         <span class="cl-pri ${priCls}">${priTxt}</span></div>`;
     }).join('')}`).join('');
+
+  updateClProgress();
 }
 document.getElementById('cl-list').addEventListener('click', e => {
-  const it = e.target.closest('.cl-item'); if (!it) return;
-  clState[it.dataset.key] = !clState[it.dataset.key];
-  DB.set('cl_' + currentRoute.id, clState);
-  renderChecklist(currentRoute);
+  const it = e.target.closest('.cl-item'); if (!it || !clRoute) return;
+  const key = it.dataset.key;
+  clState[key] = !clState[key];
+  DB.set('cl_' + clRoute.id, clState);
+  // обновляем только этот пункт — не перерисовываем список, скролл не сбрасывается
+  const done = clState[key];
+  it.classList.toggle('done', done);
+  it.querySelector('.cl-box').textContent = done ? '✓' : '';
+  updateClProgress();
 });
+document.getElementById('cl-next').onclick = () => {
+  if (!pendingRoute) { back(); return; }
+  if (pendingAction === 'plan') { renderPlan(pendingRoute); nav('plan'); }
+  else { renderNotify(pendingRoute); nav('notify'); }
+};
 document.getElementById('cl-share').onclick = () => {
   const p = DB.get('profile', {});
-  const lines = [...document.querySelectorAll('.cl-item')].map(el =>
+  const r = clRoute || currentRoute;
+  const lines = [...document.querySelectorAll('#cl-list .cl-item')].map(el =>
     (clState[el.dataset.key] ? '[✓] ' : '[ ] ') + el.querySelector('.cl-text').textContent);
-  shareText(`Снаряжение на «${currentRoute.name}» (${p.name}):\n` + lines.join('\n'));
+  shareText(`Снаряжение на «${r.name}» (${p.name}):\n` + lines.join('\n'));
 };
 
 /* ───────── поход ───────── */
 let watchId = null;
 let pendingRoute = null;
+let pendingAction = 'start';
 
 function tripHours(r) { return r.days >= 3 ? 72 : r.days === 2 ? 36 : 12; }
 
@@ -369,17 +587,115 @@ function makeTrip(r) {
   };
 }
 
-/** Сначала выбираем, кого уведомить, потом стартуем. */
+/** «Начать поход» → сначала оценка риска */
 function startTrip(r) {
   const t = DB.get('trip', null);
   if (t && t.active) {
     if (t.routeId === r.id) { nav('trip'); return; }
     toast('Уже идёт другой поход'); return;
   }
-  pendingRoute = r;
-  renderNotify(r);
-  nav('notify');
+  pendingAction = 'start';
+  openRisk(r);
 }
+
+/** «Запланировать» → та же оценка риска */
+function planTrip(r) {
+  const t = DB.get('trip', null);
+  if (t && t.active) { toast('Сначала завершите текущий поход'); return; }
+  pendingAction = 'plan';
+  openRisk(r);
+}
+
+function openRisk(r) {
+  pendingRoute = r;
+  renderRisk(r);
+  nav('risk');
+}
+
+/* ───────── экран: уровень и риски ───────── */
+function renderRisk(r) {
+  const info = levelInfo();
+  const risk = assessRisk(r);
+
+  document.getElementById('risk-note').innerHTML =
+    `Маршрут: <b>${esc(r.name)}</b> · ваш уровень: <b>${levelLabel(info.level)}</b> — ${info.done} ${plural(info.done)}, ${info.km} км пройдено.`;
+
+  const g = document.getElementById('risk-gauge');
+  g.className = 'risk-gauge ' + risk.cat.cls;
+  g.innerHTML = `<div class="risk-score">${risk.score}<span>/100</span></div>
+    <div class="risk-cat">${risk.cat.t} риск</div>
+    <div class="prog-track"><i style="width:${risk.score}%"></i></div>`;
+
+  document.getElementById('risk-reasons').innerHTML = risk.reasons.length
+    ? risk.reasons.map(x => `<div class="risk-item ${x.s >= 15 ? 'bad' : ''}">
+        <span class="ri">${x.s >= 15 ? '⚠' : '•'}</span>
+        <div><b>+${x.s}</b> — ${esc(x.t)}</div></div>`).join('')
+    : `<div class="hint">Серьёзных рисков не найдено: профиль, снаряжение и маршрут подходят друг другу.</div>`;
+
+  // если риск выше среднего — предлагаем маршруты полегче
+  const altBox = document.getElementById('risk-alt');
+  const alts = risk.score >= 50 ? altRoutes(r) : [];
+  altBox.hidden = !alts.length;
+  if (alts.length) {
+    document.getElementById('risk-alt-title').textContent =
+      'Риск выше среднего. Маршруты, которые вам по силам:';
+    document.getElementById('risk-alt-list').innerHTML = alts.map(a => `
+      <div class="card" data-alt="${a.r.id}">
+        <div class="card-top">
+          <div>
+            <div class="card-name">${esc(a.r.name)}</div>
+            <div class="card-region">${esc(a.r.region)}</div>
+          </div>
+          <span class="tag ${a.risk < 25 ? 'rec' : a.risk < 50 ? '' : 'nosig'}">риск ${a.risk}</span>
+        </div>
+        <div class="card-meta">
+          <span>⏱ ${a.r.days} д</span><span>📏 ${a.r.km} км</span><span>⛰ ${a.r.alt} м</span>
+          <span>сложность ${a.r.difficulty}/5</span>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('risk-next').textContent =
+    pendingAction === 'plan' ? 'Ок, планируем' : 'Понял, продолжить';
+}
+
+document.getElementById('risk-next').onclick = () => {
+  if (!pendingRoute) { back(); return; }
+  renderChecklist(pendingRoute, 'gate');   // дальше — только через обязательный чек-лист
+  nav('checklist');
+};
+document.getElementById('risk-alt-list').addEventListener('click', e => {
+  const c = e.target.closest('[data-alt]'); if (!c) return;
+  openRisk(rById(c.dataset.alt));
+});
+
+/* ───────── экран: план похода ───────── */
+function renderPlan(r) {
+  document.getElementById('plan-note').innerHTML =
+    `Маршрут: <b>${esc(r.name)}</b> · ${r.days} дн. · риск: <b>${assessRisk(r).cat.t.toLowerCase()}</b>.`;
+  const inp = document.getElementById('plan-when');
+  const d = new Date(Date.now() + 3 * 864e5);
+  d.setHours(7, 0, 0, 0);
+  const p2 = n => String(n).padStart(2, '0');
+  inp.value = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+}
+
+document.getElementById('plan-save').onclick = () => {
+  const v = document.getElementById('plan-when').value;
+  if (!v) { toast('Укажите дату и время'); return; }
+  const at = new Date(v).getTime();
+  if (isNaN(at)) { toast('Неверная дата'); return; }
+  if (!pendingRoute) return;
+  addPlanned(pendingRoute.id, at);
+  toast('✓ Поход запланирован');
+  nav('home');
+};
+document.getElementById('plan-now').onclick = () => {
+  if (!pendingRoute) return;
+  pendingAction = 'start';
+  renderNotify(pendingRoute);
+  nav('notify');
+};
 
 /* ───────── выбор получателей SMS перед стартом ───────── */
 function renderNotify(r) {

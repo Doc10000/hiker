@@ -77,6 +77,9 @@
 
   <div class="banner" id="home-banner" hidden></div>
 
+  <h3 class="section-title" id="planned-title" hidden>Запланировано</h3>
+  <div id="planned-list" class="cards"></div>
+
   <h3 class="section-title">Рекомендовано по вашему профилю</h3>
   <div id="routes-recommended" class="cards"></div>
 
@@ -97,10 +100,12 @@
   </div>
 
   <div class="stats" id="route-stats"></div>
+  <div class="badge-row" id="route-badges" style="margin-top:12px"></div>
   <div class="note" id="route-note"></div>
   <div id="route-poi"></div>
   <div class="actions">
     <button class="btn primary big" id="route-start">Начать поход</button>
+    <button class="btn ghost big" id="route-plan">Запланировать поход</button>
     <button class="btn ghost big" id="route-checklist">Что взять?</button>
   </div>
 </section>
@@ -113,8 +118,12 @@
     <div style="width:40px"></div>
   </header>
   <div class="gen-note" id="cl-gen-note"></div>
+  <div class="cl-progress" id="cl-progress" hidden></div>
   <div id="cl-list"></div>
-  <div class="actions"><button class="btn ghost big" id="cl-share">Отправить список близким</button></div>
+  <div class="actions">
+    <button class="btn primary big" id="cl-next" hidden>Дальше</button>
+    <button class="btn ghost big" id="cl-share">Отправить список близким</button>
+  </div>
 </section>
 
 <!-- ══════════ АКТИВНЫЙ ПОХОД ══════════ -->
@@ -287,6 +296,56 @@
   <label class="field">Поиск<input id="ct-search" type="search" placeholder="Имя или номер"></label>
   <div class="hint" id="ct-hint" style="margin-bottom:10px"></div>
   <div id="ct-list"></div>
+</section>
+
+<!-- ══════════ ОЦЕНКА РИСКА ══════════ -->
+<section id="screen-risk" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn back" data-back>←</button>
+    <div class="route-title">Оценка риска</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="gen-note" id="risk-note"></div>
+
+  <div class="risk-gauge" id="risk-gauge"></div>
+
+  <h3 class="section-title">Что влияет на риск</h3>
+  <div id="risk-reasons"></div>
+
+  <div id="risk-alt" hidden>
+    <h3 class="section-title" id="risk-alt-title">Маршруты попроще</h3>
+    <div id="risk-alt-list" class="cards"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary big" id="risk-next">Продолжить</button>
+  </div>
+</section>
+
+<!-- ══════════ ПЛАН ПОХОДА ══════════ -->
+<section id="screen-plan" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn back" data-back>←</button>
+    <div class="route-title">Запланировать поход</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="gen-note" id="plan-note"></div>
+
+  <label class="field">Дата и время старта
+    <input id="plan-when" type="datetime-local">
+  </label>
+
+  <div class="info-box">
+    <b>Что будет дальше</b>
+    <p>Маршрут появится в разделе «Запланировано» на главной с обратным отсчётом. Перед стартом приложение снова покажет снаряжение, а SMS близким уйдёт автоматически.</p>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary big" id="plan-save">Запланировать</button>
+    <button class="btn ghost big" id="plan-now">Начать сейчас</button>
+  </div>
 </section>
 
 <!-- нижняя навигация -->

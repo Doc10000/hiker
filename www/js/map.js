@@ -89,6 +89,15 @@ const MapRender = (() => {
     const pad = opts.compact ? 8 : 26;
     const pts = proj(track, w, h, pad);
 
+    // соседние тропы (пунктир) — под основным маршрутом
+    if (!opts.compact && opts.trails && opts.trails.length) {
+      ctx.lineJoin = ctx.lineCap = 'round';
+      ctx.strokeStyle = '#8b949e88'; ctx.lineWidth = 2;
+      ctx.setLineDash([5, 6]);
+      opts.trails.forEach(t => { const tp = proj(t, w, h, pad); path(ctx, tp); ctx.stroke(); });
+      ctx.setLineDash([]);
+    }
+
     ctx.lineJoin = ctx.lineCap = 'round';
     // тень трека
     ctx.strokeStyle = '#00000066'; ctx.lineWidth = opts.compact ? 8 : 12;
@@ -191,8 +200,16 @@ const MapRender = (() => {
       L.control.zoom({ position: 'topright' }).addTo(map);
       L.control.scale({ position: 'bottomright', imperial: false, maxWidth: 90 }).addTo(map);
 
+      // слои соседних троп создаём ДО маршрута — тогда они гарантированно под ним
+      const spurs = [];
+      for (let i = 0; i < 6; i++) {
+        spurs.push(L.polyline([], {
+          color: '#93a1b1', weight: 2, opacity: .8, dashArray: '6 7', interactive: false
+        }).addTo(map));
+      }
       st = canvas._lm = {
         map,
+        spurs,
         line: L.polyline([], { color: '#58a6ff', weight: 4, opacity: .95 }).addTo(map),
         done: L.polyline([], { color: '#39d353', weight: 5 }).addTo(map),
         pins: [],
@@ -204,6 +221,12 @@ const MapRender = (() => {
 
     const latlngs = track.map(p => [p[0], p[1]]);
     st.line.setLatLngs(latlngs);
+
+    // соседние тропы (пунктир) — слой уже под маршрутом, просто наполняем
+    const trails = opts.trails || [];
+    st.spurs.forEach((l, i) => {
+      l.setLatLngs(i < trails.length ? trails[i].map(q => [q[0], q[1]]) : []);
+    });
 
     const p = opts.progress > 0 ? Math.min(track.length - 1, Math.round((track.length - 1) * opts.progress)) : -1;
     st.done.setLatLngs(p > 0 ? latlngs.slice(0, p + 1) : []);

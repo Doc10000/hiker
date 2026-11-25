@@ -155,6 +155,7 @@ input{font:inherit}
 .tag{font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid transparent}
 .tag.nosig{background:#ff5c5c1a; border-color:#ff5c5c44; color:#ff8f8f}
 .tag.rec{background:#3ddc7f1a; border-color:#3ddc7f44; color:var(--acc)}
+.card-actions{display:flex; gap:8px; justify-content:flex-end; align-items:center; padding:0 15px 14px}
 .card-strip{height:66px; position:relative; background:#0f141a; border-top:1px solid #ffffff10}
 .card-strip canvas{width:100%; height:100%; display:block}
 
@@ -348,6 +349,43 @@ code{font-family:ui-monospace,monospace; color:#7ee787}
 .tab .ti{font-size:20px; filter:grayscale(1); opacity:.6; transition:.16s}
 .tab.active{color:var(--acc); background:#3ddc7f14}
 .tab.active .ti{filter:none; opacity:1; transform:translateY(-1px)}
+
+/* ── риск, прогресс, план ── */
+.risk-gauge{
+  background:linear-gradient(180deg,#161d25,#12181e); border:1px solid var(--line);
+  border-radius:18px; padding:20px 18px; text-align:center; box-shadow:var(--shadow); margin-bottom:6px;
+}
+.risk-score{font-size:46px; font-weight:900; letter-spacing:-1.5px; line-height:1; color:var(--acc)}
+.risk-score span{font-size:16px; font-weight:700; color:var(--dim); margin-left:4px}
+.risk-cat{font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.1px; margin:9px 0 13px; color:var(--acc)}
+.risk-gauge.mid .risk-score,.risk-gauge.mid .risk-cat{color:var(--warn)}
+.risk-gauge.high .risk-score,.risk-gauge.high .risk-cat{color:#ff8a5c}
+.risk-gauge.crit .risk-score,.risk-gauge.crit .risk-cat{color:var(--danger)}
+
+.prog-track{height:9px; border-radius:999px; background:#0f151c; border:1px solid var(--line); overflow:hidden}
+.prog-track i{display:block; height:100%; border-radius:999px; background:var(--grad); transition:width .3s}
+.risk-gauge.mid .prog-track i{background:linear-gradient(135deg,#ffd27a,#ffb454)}
+.risk-gauge.high .prog-track i{background:linear-gradient(135deg,#ff9a6b,#ff7a45)}
+.risk-gauge.crit .prog-track i{background:linear-gradient(135deg,#ff8a8a,#ff5c5c)}
+.prog-row{display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--dim); margin-bottom:9px}
+.prog-row b{color:var(--fg); font-size:15px}
+.cl-progress{background:#ffffff06; border:1px solid var(--line); border-radius:14px; padding:13px 15px; margin-bottom:15px}
+
+.risk-item{
+  display:flex; gap:11px; align-items:flex-start; background:linear-gradient(180deg,#161d25,#12181e);
+  border:1px solid var(--line); border-radius:13px; padding:12px 14px; margin-bottom:9px;
+  font-size:14px; line-height:1.45;
+}
+.risk-item .ri{
+  width:25px; height:25px; border-radius:50%; display:grid; place-items:center; flex:none;
+  background:#ffffff0d; font-size:13px; color:var(--dim);
+}
+.risk-item.bad{border-color:#ff5c5c55; background:linear-gradient(180deg,#1c1416,#171012)}
+.risk-item.bad .ri{background:#ff5c5c22; color:#ff8f8f}
+.risk-item b{color:var(--fg)}
+
+.btn.mini{padding:7px 13px; font-size:13px; border-radius:11px}
+.chip.warn{background:#ffb4541a; border-color:#ffb45444; color:var(--warn)}
 
 /* ── тост ── */
 #toast{
