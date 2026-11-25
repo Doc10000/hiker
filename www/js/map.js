@@ -209,8 +209,8 @@ const MapRender = (() => {
     st.done.setLatLngs(p > 0 ? latlngs.slice(0, p + 1) : []);
 
     st.pins.forEach(m => st.map.removeLayer(m)); st.pins = [];
-    st.pins.push(L.marker(latlngs[0], { icon: icon('<div class="pin start">▶</div>', 'start-marker'), interactive: false }).addTo(st.map));
-    st.pins.push(L.marker(latlngs[latlngs.length - 1], { icon: icon('<div class="pin finish">■</div>', 'finish-marker'), interactive: false }).addTo(st.map));
+    st.pins.push(L.marker(latlngs[0], { icon: icon('<div class="pin start">▶</div>', 'start-marker'), interactive: false, zIndexOffset: 800 }).addTo(st.map));
+    st.pins.push(L.marker(latlngs[latlngs.length - 1], { icon: icon('<div class="pin finish">■</div>', 'finish-marker'), interactive: false, zIndexOffset: 800 }).addTo(st.map));
 
     (opts.poi || []).forEach(pt => {
       const meta = (typeof POI_META !== 'undefined' && POI_META[pt.type]) || { icon: '📍', name: pt.type };
