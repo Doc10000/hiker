@@ -116,6 +116,47 @@ function smsResultText(res) {
   return 'Не отправлено — проверьте разрешение SMS';
 }
 
+/* ───────── сервер метки: живое обновление для близких ───────── */
+function serverBase() {
+  return String(DB.get('serverBase', '') || '').trim().replace(/\/+$/, '');
+}
+
+/** Отправить текущее состояние похода на локальный сервер метки */
+function pushTrack(status) {
+  const base = serverBase();
+  const t = DB.get('trip', null);
+  if (!base || !t) return Promise.resolve(null);
+  const p = DB.get('profile', {});
+  const r = rById(t.routeId);
+  const body = {
+    tripId: t.linkId || 'trip',
+    lat: t.pos ? t.pos.lat : null,
+    lng: t.pos ? t.pos.lng : null,
+    acc: t.pos ? Math.round(t.pos.acc) : null,
+    at: Date.now(),
+    status: status || (t.active ? 'ok' : 'arrived'),
+    name: p.name || '',
+    route: r ? r.name : '',
+    deadline: t.deadline || null,
+    startedAt: t.startedAt || null
+  };
+  return fetch(base + '/api/track', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(res => res.json()).catch(() => null);
+}
+
+document.getElementById('fam-server').value = DB.get('serverBase', '');
+document.getElementById('fam-server-save').onclick = () => {
+  const v = document.getElementById('fam-server').value.trim().replace(/\/+$/, '');
+  DB.set('serverBase', v);
+  if (!v) { toast('Сервер отключён — метка работает по ссылке'); return; }
+  pushTrack().then(r2 => {
+    toast(r2 && r2.ok ? '✓ Сервер сохранён, метка обновляется' : '✗ Сервер не отвечает');
+  });
+};
+
 /* ───────── уровень, риск, планы ───────── */
 function plural(n, forms) {
   const f = forms || ['поход', 'похода', 'походов'];
