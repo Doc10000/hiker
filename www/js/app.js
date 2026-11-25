@@ -62,6 +62,10 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, m =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 }
+function initialOf(name) {
+  const s = String(name || '?').trim();
+  return esc((s.charAt(0) || '?').toUpperCase());
+}
 
 function getContacts() { return DB.get('contacts', []); }
 function setContacts(list) { DB.set('contacts', list); }
@@ -116,8 +120,26 @@ function smsResultText(res) {
 const screens = [...document.querySelectorAll('.screen')];
 const tabbar = document.getElementById('tabbar');
 const TABS = ['home', 'trip', 'family', 'more'];
+let navStack = [];
 
-function nav(id) {
+function currentScreenId() {
+  const el = screens.find(s => !s.hidden);
+  return el ? el.id.replace('screen-', '') : null;
+}
+
+function nav(id, opts) {
+  opts = opts || {};
+  const cur = currentScreenId();
+  if (!opts.replace && cur && cur !== id) {
+    if (TABS.includes(id)) {
+      // корневые экраны: стек обнуляется (из вкладки назад — на главную)
+      navStack = (id === 'home') ? [] : ['home'];
+    } else {
+      navStack.push(cur);
+      if (navStack.length > 30) navStack.shift();
+    }
+  }
+
   screens.forEach(s => s.hidden = s.id !== 'screen-' + id);
   const isMain = TABS.includes(id) && DB.get('profile', null);
   tabbar.hidden = !isMain;
@@ -131,9 +153,31 @@ function nav(id) {
   if (id === 'route' && currentRoute) requestAnimationFrame(() => showRoute(currentRoute));
   window.scrollTo(0, 0);
 }
+
+/** Назад по стеку (кнопки «←» и системная кнопка Android). */
+function back() {
+  const cur = currentScreenId();
+  const prev = navStack.pop();
+  if (prev && prev !== cur) { nav(prev, { replace: true }); return true; }
+  if (cur && cur !== 'home') { nav('home', { replace: true }); return true; }
+  return false;
+}
+
+/* системная кнопка «назад» Android → вызывает нативный код */
+window.__nativeBack = function () {
+  if (navStack.length) { back(); return true; }
+  const cur = currentScreenId();
+  if (cur && cur !== 'home') { nav('home', { replace: true }); return true; }
+  return false; // на главной — выходим из приложения
+};
+
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-nav]');
   if (el) nav(el.dataset.nav);
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-back]');
+  if (el) { e.preventDefault(); back(); }
 });
 
 /* ───────── онбординг ───────── */
@@ -346,6 +390,7 @@ function renderNotify(r) {
   const el = document.getElementById('notify-list');
   el.innerHTML = list.length ? list.map(c => `
     <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
       <div class="contact-main">
         <div class="contact-name">${esc(c.name)}</div>
         <div class="contact-phone">${esc(c.phone)}</div>
@@ -601,7 +646,7 @@ document.getElementById('sos-call').onclick = () => {
   if (p.contactPhone) window.location.href = 'tel:' + p.contactPhone.replace(/\s/g, '');
   else toast('Добавьте контакт близкого в онбординге');
 };
-document.getElementById('sos-back').onclick = () => nav('trip');
+document.getElementById('sos-back').onclick = () => back();
 
 /* ───────── близкие ───────── */
 function renderFamily() {
@@ -624,6 +669,7 @@ function renderFamilyContacts() {
   }
   el.innerHTML = list.map(c => `
     <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
       <div class="contact-main">
         <div class="contact-name">${esc(c.name)}</div>
         <div class="contact-phone">${esc(c.phone)}</div>
@@ -678,6 +724,7 @@ function renderDeviceContacts(q) {
   el.innerHTML = list.length ? list.map(c => {
     const added = have.has(c.phone);
     return `<div class="contact-item ${added ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
       <div class="contact-main">
         <div class="contact-name">${esc(c.name)}</div>
         <div class="contact-phone">${esc(c.phone)}</div>
@@ -687,7 +734,7 @@ function renderDeviceContacts(q) {
   }).join('') : '<div class="hint">Ничего не найдено.</div>';
 }
 document.getElementById('ct-search').addEventListener('input', e => renderDeviceContacts(e.target.value));
-document.getElementById('ct-back').onclick = () => nav(contactsReturn);
+document.getElementById('ct-back').onclick = () => back();
 document.getElementById('ct-list').addEventListener('click', e => {
   const b = e.target.closest('[data-add-phone]'); if (!b || b.disabled) return;
   if (addContact(b.dataset.addName, b.dataset.addPhone)) {
@@ -786,11 +833,14 @@ function toast(msg) {
   let el = document.getElementById('toast');
   if (!el) {
     el = document.createElement('div'); el.id = 'toast';
-    el.style.cssText = 'position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:#1f2630;border:1px solid #2b3441;color:#e6edf3;padding:10px 18px;border-radius:10px;z-index:99;font-size:14px;max-width:90%;text-align:center';
     document.body.appendChild(el);
   }
-  el.textContent = msg; el.style.display = 'block';
-  clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 2200);
+  el.textContent = msg;
+  el.classList.remove('show');
+  void el.offsetWidth; // перезапуск анимации
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
 }
 
 /* ───────── старт ───────── */
