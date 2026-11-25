@@ -244,6 +244,7 @@ function nav(id, opts) {
   if (id === 'sos') initSos();
   if (id === 'route' && currentRoute) requestAnimationFrame(() => showRoute(currentRoute));
   window.scrollTo(0, 0);
+  applyI18n();
 }
 
 /** Назад по стеку (кнопки «←» и системная кнопка Android). */
@@ -270,6 +271,10 @@ document.addEventListener('click', e => {
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-back]');
   if (el) { e.preventDefault(); back(); }
+});
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-lang]');
+  if (el) { setLang(el.dataset.lang); toast('✓ ' + langName(el.dataset.lang)); }
 });
 
 /* ───────── онбординг ───────── */
@@ -1204,6 +1209,8 @@ function toast(msg) {
 
 /* ───────── старт ───────── */
 (function init() {
+  initLang();
+
   // миграция: старый единственный контакт → список
   const prof0 = DB.get('profile', null);
   if (prof0 && prof0.contactPhone && !getContacts().length) {

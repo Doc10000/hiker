@@ -419,6 +419,22 @@ code{font-family:ui-monospace,monospace; color:#7ee787}
 .btn.mini{padding:7px 13px; font-size:13px; border-radius:11px}
 .chip.warn{background:#ffb4541a; border-color:#ffb45444; color:var(--warn)}
 
+/* ── выбор языка ── */
+.lang-box{
+  background:linear-gradient(180deg,#161d25,#12181e); border:1px solid var(--line);
+  border-radius:16px; padding:15px 16px; margin-bottom:16px; box-shadow:var(--shadow);
+}
+.lang-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px}
+.lang-item{
+  display:flex; align-items:center; gap:9px; padding:12px 13px; border-radius:12px;
+  background:#ffffff08; border:1px solid var(--line); transition:.15s; text-align:left;
+}
+.lang-item:active{transform:scale(.97)}
+.lang-item.sel{background:#12251a; border-color:var(--acc); box-shadow:0 0 0 1px var(--acc) inset}
+.lang-flag{font-size:20px; line-height:1}
+.lang-name{flex:1; font-size:14px; font-weight:600}
+.lang-code{font-size:11px; color:var(--dim); font-weight:700; letter-spacing:.5px}
+
 /* ── тост ── */
 #toast{
   position:fixed; top:calc(var(--sb) + 14px); left:50%;
