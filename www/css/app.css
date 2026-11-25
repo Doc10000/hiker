@@ -185,6 +185,20 @@ input{font:inherit}
   font-size:12px; overflow-x:auto; white-space:pre; color:#7ee787; font-family:ui-monospace,monospace}
 code{font-family:ui-monospace,monospace; color:#7ee787}
 
+/* ── контакты ── */
+.contact-item{display:flex; align-items:center; gap:10px; background:var(--bg2); border:1px solid var(--line);
+  border-radius:10px; padding:12px 14px; margin-bottom:8px}
+.contact-item.on{border-color:#2b4a35; background:#101c15}
+.contact-main{flex:1; min-width:0}
+.contact-name{font-weight:600; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.contact-phone{color:var(--dim); font-size:13px; font-family:ui-monospace,monospace; margin-top:2px}
+.contact-toggle{background:var(--bg3); border:1px solid var(--line); color:var(--dim); border-radius:8px;
+  padding:7px 10px; font-size:12px; flex:none; white-space:nowrap}
+.contact-item.on .contact-toggle{background:#12251a; border-color:var(--acc); color:var(--acc)}
+.contact-toggle:disabled{opacity:.6}
+.contact-del{background:none; border:none; color:var(--dim); font-size:16px; padding:4px 6px; flex:none}
+.contact-del:active{color:var(--danger)}
+
 /* ── таббар ── */
 #tabbar{position:fixed; left:0; right:0; bottom:0; display:flex; background:#0d1117f2;
   border-top:1px solid var(--line); padding-bottom:var(--safe); backdrop-filter:blur(8px); z-index:10}

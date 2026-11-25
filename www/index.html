@@ -177,6 +177,10 @@
   <label class="field">Имя<input id="fam-name" type="text" placeholder="Кому отправлять метку"></label>
   <label class="field">Телефон<input id="fam-phone" type="tel" placeholder="+7 700 000 00 00"></label>
   <button class="btn primary big" id="fam-save">Сохранить контакт</button>
+  <button class="btn ghost big" id="fam-import">Добавить из контактов устройства</button>
+
+  <h3 class="section-title">Кому уведомлять при походе и SOS</h3>
+  <div id="fam-contacts"></div>
 
   <h3 class="section-title">Ссылка-метка текущего похода</h3>
   <div class="link-box" id="fam-link">Поход не начат — метка появится при старте</div>
@@ -242,6 +246,46 @@
   <div id="mchs-queue"></div>
 
   <div class="actions"><button class="btn ghost big" id="mchs-demo">Создать демо-инцидент</button></div>
+</section>
+
+<!-- ══════════ УВЕДОМЛЕНИЕ ПЕРЕД ПОХОДОМ ══════════ -->
+<section id="screen-notify" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" data-nav="route">←</button>
+    <div class="route-title">Кого уведомить?</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <div class="gen-note" id="notify-note"></div>
+  <div id="notify-list"></div>
+
+  <div class="row" style="margin-top:14px">
+    <button class="btn ghost" id="notify-import">Из контактов</button>
+    <button class="btn ghost" id="notify-all">Выбрать всех</button>
+  </div>
+
+  <div class="info-box">
+    <b>Сообщение уйдёт автоматически</b>
+    <div class="link-box" id="notify-preview" style="margin-top:8px"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary big" id="notify-send">Отправить SMS и начать поход</button>
+    <button class="btn ghost big" id="notify-skip">Начать без SMS</button>
+  </div>
+</section>
+
+<!-- ══════════ ВЫБОР ИЗ КОНТАКТОВ УСТРОЙСТВА ══════════ -->
+<section id="screen-contacts" class="screen" hidden>
+  <header class="app-header sticky">
+    <button class="icon-btn" id="ct-back">←</button>
+    <div class="route-title">Контакты устройства</div>
+    <div style="width:40px"></div>
+  </header>
+
+  <label class="field">Поиск<input id="ct-search" type="search" placeholder="Имя или номер"></label>
+  <div class="hint" id="ct-hint" style="margin-bottom:10px"></div>
+  <div id="ct-list"></div>
 </section>
 
 <!-- нижняя навигация -->

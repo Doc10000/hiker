@@ -178,7 +178,7 @@ const MapRender = (() => {
         zoomSnap: 0.5,
         zoomDelta: 0.5
       });
-      const tiles = L.tileLayer(TILE_URL, { maxZoom: 19, maxNativeZoom: 19, attribution: TILE_ATTR, className: 'osm-tiles' }).addTo(map);
+      const tiles = L.tileLayer(TILE_URL, { maxZoom: 22, maxNativeZoom: 19, attribution: TILE_ATTR, className: 'osm-tiles' }).addTo(map);
       let errors = 0;
       tiles.on('tileerror', () => {
         errors++;

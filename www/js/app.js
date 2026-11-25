@@ -41,6 +41,77 @@ const IncidentService = {
   }
 };
 
+/* ───────── SMS и контакты (нативный плагин HikerNative) ─────────
+   В APK отправка идёт напрямую (SmsManager), без открытия «Сообщений».
+   В вебе плагина нет — открываем редактор SMS как запасной вариант. */
+const Native = {
+  ok() {
+    try {
+      return !!(window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.HikerNative);
+    } catch (e) { return false; }
+  },
+  sendSms(to, message) {
+    return window.Capacitor.Plugins.HikerNative.sendSms({ to, message });
+  },
+  listContacts() {
+    return window.Capacitor.Plugins.HikerNative.listContacts();
+  }
+};
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+
+function getContacts() { return DB.get('contacts', []); }
+function setContacts(list) { DB.set('contacts', list); }
+function notifyPhones() {
+  return getContacts().filter(c => c.notify !== false && c.phone).map(c => c.phone);
+}
+function addContact(name, phone) {
+  phone = String(phone || '').trim();
+  if (!phone) return false;
+  const list = getContacts();
+  if (list.some(c => c.phone === phone)) return false;
+  list.push({
+    id: 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    name: String(name || '').trim() || phone,
+    phone, notify: true
+  });
+  setContacts(list);
+  return true;
+}
+function removeContact(id) { setContacts(getContacts().filter(c => c.id !== id)); }
+function toggleNotify(id) {
+  const list = getContacts();
+  const c = list.find(x => x.id === id);
+  if (c) { c.notify = !(c.notify !== false); setContacts(list); }
+}
+
+/** Отправить SMS всем отмеченным. Веб → открываем редактор сообщения. */
+async function sendSmsToAll(text) {
+  const phones = notifyPhones();
+  const res = { sent: [], failed: [], web: false, count: phones.length };
+  if (!phones.length) return res;
+  if (!Native.ok()) {
+    res.web = true;
+    try { window.location.href = 'sms:' + phones[0] + '?body=' + encodeURIComponent(text); } catch (e) {}
+    return res;
+  }
+  for (const ph of phones) {
+    try { await Native.sendSms(ph, text); res.sent.push(ph); }
+    catch (e) { res.failed.push(ph); console.log('sms error', ph, e); }
+  }
+  return res;
+}
+function smsResultText(res) {
+  if (!res.count) return 'Контакты не выбраны';
+  if (res.web) return 'Открыт редактор SMS (' + res.count + ')';
+  if (res.sent.length && !res.failed.length) return 'Отправлено: ' + res.sent.length;
+  if (res.sent.length) return 'Отправлено: ' + res.sent.length + ', ошибок: ' + res.failed.length;
+  return 'Не отправлено — проверьте разрешение SMS';
+}
+
 /* ───────── навигация ───────── */
 const screens = [...document.querySelectorAll('.screen')];
 const tabbar = document.getElementById('tabbar');
@@ -242,21 +313,79 @@ document.getElementById('cl-share').onclick = () => {
 
 /* ───────── поход ───────── */
 let watchId = null;
+let pendingRoute = null;
 
-function startTrip(r) {
-  const t = DB.get('trip', null);
-  if (t && t.active && t.routeId === r.id) { nav('trip'); return; }
-  const p = DB.get('profile', {});
-  const hours = r.days >= 3 ? 72 : r.days === 2 ? 36 : 12;
-  const deadline = Date.now() + hours * 3600e3;
-  const trip = {
-    routeId: r.id, active: true, startedAt: Date.now(), deadline,
+function tripHours(r) { return r.days >= 3 ? 72 : r.days === 2 ? 36 : 12; }
+
+function makeTrip(r) {
+  return {
+    routeId: r.id, active: true, startedAt: Date.now(),
+    deadline: Date.now() + tripHours(r) * 3600e3,
     points: [], pos: null, notified: false, linkId: Math.random().toString(36).slice(2, 8)
   };
+}
+
+/** Сначала выбираем, кого уведомить, потом стартуем. */
+function startTrip(r) {
+  const t = DB.get('trip', null);
+  if (t && t.active) {
+    if (t.routeId === r.id) { nav('trip'); return; }
+    toast('Уже идёт другой поход'); return;
+  }
+  pendingRoute = r;
+  renderNotify(r);
+  nav('notify');
+}
+
+/* ───────── выбор получателей SMS перед стартом ───────── */
+function renderNotify(r) {
+  document.getElementById('notify-note').innerHTML =
+    `Маршрут: <b>${esc(r.name)}</b> (${r.days} дн.). Выберите, кому отправить SMS — отправим автоматически при старте.`;
+
+  const list = getContacts();
+  const el = document.getElementById('notify-list');
+  el.innerHTML = list.length ? list.map(c => `
+    <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" data-ntoggle="${c.id}">${c.notify !== false ? '✓ уведомить' : 'выкл'}</button>
+    </div>`).join('')
+    : '<div class="hint">Контактов пока нет — добавьте кнопкой «Из контактов» или начните без SMS.</div>';
+
+  document.getElementById('notify-preview').textContent = notifyText(r);
+}
+
+function notifyText(r) {
+  const tmp = makeTrip(r);
+  return `Я в походе: «${r.name}». План: вернуться до ${new Date(tmp.deadline).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}. Метка: ${buildLink(tmp, r)}`;
+}
+
+function beginTrip(r, withSms) {
+  const trip = makeTrip(r);
   DB.set('trip', trip);
   startWatch();
   nav('trip');
+  if (withSms) {
+    sendSmsToAll(linkText()).then(res => toast(smsResultText(res)));
+  } else {
+    toast('Поход начат — без SMS');
+  }
 }
+
+document.getElementById('notify-send').onclick = () => { if (pendingRoute) beginTrip(pendingRoute, true); };
+document.getElementById('notify-skip').onclick = () => { if (pendingRoute) beginTrip(pendingRoute, false); };
+document.getElementById('notify-all').onclick = () => {
+  setContacts(getContacts().map(c => Object.assign({}, c, { notify: true })));
+  if (pendingRoute) renderNotify(pendingRoute);
+};
+document.getElementById('notify-import').onclick = () => openContacts('notify');
+document.getElementById('notify-list').addEventListener('click', e => {
+  const b = e.target.closest('[data-ntoggle]'); if (!b) return;
+  toggleNotify(b.dataset.ntoggle);
+  if (pendingRoute) renderNotify(pendingRoute);
+});
 
 function startWatch() {
   stopWatch();
@@ -368,18 +497,20 @@ document.getElementById('trip-track').onclick = () => { shareText(linkText()); }
 
 /* ───────── ссылка-метка ─────────
    Данные похода кодируются в саму ссылку → работает без сервера. */
-function tripLink() {
-  const t = DB.get('trip', null); if (!t) return '';
+function buildLink(trip, r) {
   const p = DB.get('profile', {});
-  const r = rById(t.routeId);
   const payload = {
-    n: p.name, c: p.contactName, ph: p.contactPhone, r: r.name,
-    p: t.points.slice(-40).map(pt => [+pt.lat.toFixed(5), +pt.lng.toFixed(5), Math.round(pt.at / 60000)]),
-    d: Math.round(t.deadline / 60000), s: Math.round(t.startedAt / 60000)
+    n: p.name, c: p.contactName, ph: p.contactPhone, r: r ? r.name : '',
+    p: (trip.points || []).slice(-40).map(pt => [+pt.lat.toFixed(5), +pt.lng.toFixed(5), Math.round(pt.at / 60000)]),
+    d: Math.round(trip.deadline / 60000), s: Math.round(trip.startedAt / 60000)
   };
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const raw = (DB.get('linkBase', 'share.html#') || 'share.html#').replace(/#$/, '');
   return raw.endsWith('/') ? raw + b64 : raw + '#' + b64;
+}
+function tripLink() {
+  const t = DB.get('trip', null); if (!t) return '';
+  return buildLink(t, rById(t.routeId));
 }
 function linkText() {
   const t = DB.get('trip', null); if (!t) return '';
@@ -440,7 +571,8 @@ document.getElementById('sos-send').onclick = () => {
   const msg = `SOS! ${p.name || 'Турист'} в опасности. Координаты: ${coords}. ` +
     (t ? `Маршрут: ${rById(t.routeId).name}. ` : '') + `Метка: ${tripLink() || '—'}`;
 
-  st[0].textContent = 'отправлено'; st[0].className = 'ch-status sent';
+  st[0].textContent = notifyPhones().length ? 'отправка…' : 'нет контактов';
+  st[0].className = 'ch-status' + (notifyPhones().length ? ' wait' : '');
   st[1].textContent = 'нажмите «Позвонить»'; st[1].className = 'ch-status ok';
   st[2].textContent = 'отправлено'; st[2].className = 'ch-status sent';
   st[3].textContent = 'в очереди (нужен шлюз)'; st[3].className = 'ch-status wait';
@@ -449,11 +581,20 @@ document.getElementById('sos-send').onclick = () => {
   box.hidden = false;
   box.innerHTML = `<b>Инцидент ${ev.incident_id} создан.</b><br>
     ${msg}<br><br>
-    <span style="color:var(--dim)">Канал «родственник»: отправлено.
+    <span style="color:var(--dim)">Канал «родственник»: <b id="sos-sms">отправка…</b>.
     Канал «МЧС»: событие в очереди — подключается шлюзом (см. раздел «Службы спасения»).</span>
     <div class="row"><button class="btn ghost" id="sos-copy">Копировать сообщение</button></div>`;
-  document.getElementById('sos-copy').onclick = () => { copy(msg); toast('Скопировано'); };
+  document.getElementById('sos-copy').onclick = () => { copy(msg); toast('SOS скопировано'); };
   copy(msg);
+
+  // SMS выбранным контактам уходит автоматически
+  sendSmsToAll(msg).then(res => {
+    const txt = smsResultText(res);
+    st[0].textContent = txt;
+    st[0].className = 'ch-status ' + (res.sent.length ? 'sent' : res.web ? 'ok' : 'wait');
+    const s = document.getElementById('sos-sms');
+    if (s) s.textContent = txt;
+  });
 };
 document.getElementById('sos-call').onclick = () => {
   const p = DB.get('profile', {});
@@ -465,23 +606,112 @@ document.getElementById('sos-back').onclick = () => nav('trip');
 /* ───────── близкие ───────── */
 function renderFamily() {
   const p = DB.get('profile', {});
-  document.getElementById('fam-name').value = p.contactName || '';
-  document.getElementById('fam-phone').value = p.contactPhone || '';
+  document.getElementById('fam-name').value = '';
+  document.getElementById('fam-phone').value = '';
   document.getElementById('fam-base').value = DB.get('linkBase', 'share.html#');
   const t = DB.get('trip', null);
   document.getElementById('fam-link').textContent =
     (t && t.active) ? tripLink() : 'Поход не начат — метка появится при старте';
+  renderFamilyContacts();
 }
+
+function renderFamilyContacts() {
+  const el = document.getElementById('fam-contacts');
+  const list = getContacts();
+  if (!list.length) {
+    el.innerHTML = '<div class="hint">Пока пусто. Добавьте вручную или из контактов устройства.</div>';
+    return;
+  }
+  el.innerHTML = list.map(c => `
+    <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" data-toggle="${c.id}">${c.notify !== false ? 'уведомлять ✓' : 'выкл'}</button>
+      <button class="contact-del" data-del="${c.id}">✕</button>
+    </div>`).join('');
+}
+document.getElementById('fam-contacts').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (del) { removeContact(del.dataset.del); renderFamilyContacts(); return; }
+  const tg = e.target.closest('[data-toggle]');
+  if (tg) { toggleNotify(tg.dataset.toggle); renderFamilyContacts(); }
+});
+
+/* ───────── контакты устройства ───────── */
+let deviceContacts = [];
+let contactsReturn = 'family';
+
+async function openContacts(returnTo) {
+  contactsReturn = returnTo || 'family';
+  nav('contacts');
+  document.getElementById('ct-search').value = '';
+  const hint = document.getElementById('ct-hint');
+  const listEl = document.getElementById('ct-list');
+  if (!Native.ok()) {
+    hint.textContent = '';
+    listEl.innerHTML = '<div class="hint">В веб-версии список недоступен — установи APK, тогда контакты устройства подтянутся автоматически.</div>';
+    return;
+  }
+  hint.textContent = 'Загружаем контакты…';
+  listEl.innerHTML = '';
+  try {
+    const res = await Native.listContacts();
+    deviceContacts = (res && res.contacts) || [];
+    hint.textContent = 'Найдено: ' + deviceContacts.length + '. Нажмите, чтобы добавить.';
+    renderDeviceContacts('');
+  } catch (e) {
+    hint.textContent = '';
+    listEl.innerHTML = '<div class="hint">Не удалось прочитать контакты: ' + esc(e && e.message || e) + '</div>';
+  }
+}
+
+function renderDeviceContacts(q) {
+  const el = document.getElementById('ct-list');
+  q = String(q || '').toLowerCase().replace(/\s/g, '');
+  const have = new Set(getContacts().map(c => c.phone));
+  const list = deviceContacts.filter(c => {
+    if (!q) return true;
+    return c.name.toLowerCase().includes(q) || c.phone.replace(/\s/g, '').includes(q);
+  }).slice(0, 200);
+  el.innerHTML = list.length ? list.map(c => {
+    const added = have.has(c.phone);
+    return `<div class="contact-item ${added ? 'on' : ''}">
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" ${added ? 'disabled' : ''} data-add-name="${esc(c.name)}" data-add-phone="${esc(c.phone)}">${added ? 'добавлено ✓' : '+ добавить'}</button>
+    </div>`;
+  }).join('') : '<div class="hint">Ничего не найдено.</div>';
+}
+document.getElementById('ct-search').addEventListener('input', e => renderDeviceContacts(e.target.value));
+document.getElementById('ct-back').onclick = () => nav(contactsReturn);
+document.getElementById('ct-list').addEventListener('click', e => {
+  const b = e.target.closest('[data-add-phone]'); if (!b || b.disabled) return;
+  if (addContact(b.dataset.addName, b.dataset.addPhone)) {
+    toast('✓ Добавлен: ' + b.dataset.addName);
+    renderDeviceContacts(document.getElementById('ct-search').value);
+    if (contactsReturn === 'notify' && pendingRoute) renderNotify(pendingRoute);
+    if (contactsReturn === 'family') renderFamilyContacts();
+  }
+});
 document.getElementById('fam-base-save').onclick = () => {
   const v = document.getElementById('fam-base').value.trim();
   if (!v) { toast('Введите адрес'); return; }
   DB.set('linkBase', v); toast('✓ Адрес сохранён'); renderFamily();
 };
 document.getElementById('fam-save').onclick = () => {
-  const p = DB.get('profile', {});
-  p.contactName = document.getElementById('fam-name').value.trim();
-  p.contactPhone = document.getElementById('fam-phone').value.trim();
-  DB.set('profile', p); toast('✓ Контакт сохранён');
+  const name = document.getElementById('fam-name').value.trim();
+  const phone = document.getElementById('fam-phone').value.trim();
+  if (!phone) { toast('Введите телефон'); return; }
+  if (addContact(name, phone)) {
+    toast('✓ Контакт добавлен');
+    document.getElementById('fam-name').value = '';
+    document.getElementById('fam-phone').value = '';
+    renderFamilyContacts();
+  } else toast('Такой номер уже есть');
 };
 document.getElementById('fam-copy').onclick = () => {
   const t = DB.get('trip', null);
@@ -565,6 +795,12 @@ function toast(msg) {
 
 /* ───────── старт ───────── */
 (function init() {
+  // миграция: старый единственный контакт → список
+  const prof0 = DB.get('profile', null);
+  if (prof0 && prof0.contactPhone && !getContacts().length) {
+    addContact(prof0.contactName || 'Близкий', prof0.contactPhone);
+  }
+
   // тикер таймера — всегда, даже сразу после онбординга
   setInterval(() => {
     if (!document.getElementById('screen-trip').hidden) renderTrip();
