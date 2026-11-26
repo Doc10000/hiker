@@ -260,7 +260,12 @@ const MapRender = (() => {
     // иначе каждый ререндер (в т.ч. в полноэкране) отматывал карту назад
     const key = opts.routeKey || '';
     if (st.fittedKey !== key) {
-      st.map.fitBounds(L.latLngBounds(latlngs), { padding: [22, 22] });
+      if (latlngs.length >= 2) {
+        st.map.fitBounds(L.latLngBounds(latlngs), { padding: [22, 22] });
+      } else {
+        // одна точка — fitBounds уводит на максимум зума, ставим разумный уровень
+        st.map.setView(latlngs[0], opts.singleZoom || 15);
+      }
       st.fittedKey = key;
     }
     st.map.invalidateSize();
