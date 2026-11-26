@@ -207,11 +207,21 @@ canvas#map{width:100%; height:270px; display:block; background:#10161d}
 <script src="js/map.js"></script>
 <script>
 (function(){
+  // переводим страницу даже если ссылка пустая/битая (экран ошибки)
+  const localize = () => {
+    try { if (typeof initLang === 'function') { initLang(); applyI18n(); } } catch (e) {}
+  };
   const b64 = location.hash.slice(1) || location.pathname.split('/t/')[1];
-  if (!b64) return;
+  if (!b64) return localize();
   let d;
-  try { d = JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch(e) { return; }
-  if (!d || !d.n) return;
+  try { d = JSON.parse(decodeURIComponent(escape(atob(b64)))); } catch(e) { return localize(); }
+  if (!d || !d.n) return localize();
+
+  // язык из ссылки — до первого рендера, чтобы даты форматировались сразу
+  if (d.lng && typeof LANGS !== 'undefined' && LANGS.some(l => l.code === d.lng)) {
+    try { localStorage.setItem('lang', d.lng); } catch (e) {}
+  }
+  if (typeof initLang === 'function') initLang();
 
   document.getElementById('err').style.display='none';
   document.getElementById('ok').hidden = false;
@@ -234,10 +244,9 @@ canvas#map{width:100%; height:270px; display:block; background:#10161d}
   }
 
   const dl = new Date(d.d*60000), st = new Date(d.s*60000);
-  document.getElementById('deadline').textContent =
-    dl.toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
-  document.getElementById('start').textContent =
-    st.toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  const dfmt = { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' };
+  document.getElementById('deadline').textContent = dl.toLocaleString(LANG, dfmt);
+  document.getElementById('start').textContent = st.toLocaleString(LANG, dfmt);
 
   const card = document.getElementById('status-card');
   const chip = document.getElementById('status');
@@ -290,13 +299,8 @@ canvas#map{width:100%; height:270px; display:block; background:#10161d}
     setInterval(poll, 15000);
   }
 
-  // язык, которым пользовался турист (зашит в ссылку)
-  if (d.lng && LANGS.some(l => l.code === d.lng)) {
-    try { localStorage.setItem('lang', d.lng); } catch (e) {}
-  }
-  initLang();
+  // язык уже применён в начале — осталось развести текст по узлам
   applyI18n();
-})();
-</script>
+})();</script>
 </body>
 </html>
