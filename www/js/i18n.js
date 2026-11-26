@@ -361,12 +361,15 @@ function initLang() {
 
 /** Список языков с флагами (экран «Ещё») */
 function renderLangList() {
-  const box = document.getElementById('lang-list');
-  if (!box) return;
-  box.innerHTML = LANGS.map(l => `
+  const html = LANGS.map(l => `
     <button class="lang-item ${l.code === LANG ? 'sel' : ''}" data-lang="${l.code}">
       <span class="lang-flag">${l.flag}</span>
       <span class="lang-name">${l.name}</span>
       <span class="lang-code">${l.code.toUpperCase()}</span>
     </button>`).join('');
+  // два места: первый экран выбора языка и раздел «Ещё»
+  ['lang-list-start', 'lang-list'].forEach(id => {
+    const box = document.getElementById(id);
+    if (box) box.innerHTML = html;
+  });
 }

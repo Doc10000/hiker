@@ -9,6 +9,19 @@
 </head>
 <body>
 
+<!-- ══════════ ВЫБОР ЯЗЫКА — ПЕРВЫЙ ЭКРАН ══════════ -->
+<section id="screen-lang" class="screen" hidden>
+  <div class="lang-hero">
+    <div class="brand">⛰️ Горный хайкер</div>
+    <h1>Язык · Тіл · Language</h1>
+    <p class="sub">Выберите язык · Тілді таңдаңыз · Choose a language · 选择语言 · भाषा चुनें</p>
+  </div>
+  <div id="lang-list-start" class="lang-grid lang-grid-big"></div>
+  <p class="hint" style="margin-top:20px;text-align:center">
+    Язык можно поменять позже в разделе «Ещё».
+  </p>
+</section>
+
 <!-- ══════════ ОНБОРДИНГ ══════════ -->
 <section id="screen-onboarding" class="screen">
   <div class="ob-progress"><span id="ob-dot-0" class="dot active"></span><span id="ob-dot-1" class="dot"></span><span id="ob-dot-2" class="dot"></span><span id="ob-dot-3" class="dot"></span><span id="ob-dot-4" class="dot"></span></div>
@@ -72,7 +85,6 @@
       <div class="greet" id="home-greet">Привет</div>
       <div class="badge-row"><span class="chip ok" id="home-offline">✓ Работает офлайн</span><span class="chip" id="home-level"></span></div>
     </div>
-    <button class="icon-btn" id="home-profile" title="Профиль">⚙</button>
   </header>
 
   <div class="banner" id="home-banner" hidden></div>

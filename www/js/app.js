@@ -326,7 +326,15 @@ document.addEventListener('click', e => {
 });
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-lang]');
-  if (el) { setLang(el.dataset.lang); toast('✓ ' + langName(el.dataset.lang)); }
+  if (!el) return;
+  setLang(el.dataset.lang);
+  if (currentScreenId() === 'lang') {
+    // первый экран: язык выбран — уходим в онбординг
+    nav('onboarding');
+    obRender();
+  } else {
+    toast('✓ ' + langName(el.dataset.lang));
+  }
 });
 
 /* ───────── онбординг ───────── */
@@ -1386,7 +1394,8 @@ function toast(msg) {
   checkTripClock();
 
   const p = DB.get('profile', null);
-  if (p) { resumeWatch(); nav('home'); } else { nav('onboarding'); obRender(); }
+  if (p) { resumeWatch(); nav('home'); }
+  else { nav('lang'); }          // первый запуск — спрашиваем язык
 })();
 function resumeWatch() {
   const t = DB.get('trip', null);

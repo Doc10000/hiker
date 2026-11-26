@@ -451,6 +451,15 @@ code{font-family:ui-monospace,monospace; color:#7ee787}
 .lang-flag{font-size:20px; line-height:1}
 .lang-name{flex:1; font-size:14px; font-weight:600}
 .lang-code{font-size:11px; color:var(--dim); font-weight:700; letter-spacing:.5px}
+/* первый экран — крупный выбор языка */
+.lang-hero{text-align:center; margin:34px 0 26px}
+.lang-hero h1{font-size:27px; margin:12px 0 8px; line-height:1.25}
+.lang-hero .sub{margin:0}
+.lang-grid-big{grid-template-columns:1fr; gap:12px}
+.lang-grid-big .lang-item{padding:16px 18px; gap:14px}
+.lang-grid-big .lang-flag{font-size:26px}
+.lang-grid-big .lang-name{font-size:17px}
+.lang-grid-big .lang-code{font-size:12px}
 
 /* ── тост ── */
 #toast{
