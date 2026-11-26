@@ -26,9 +26,73 @@ CYR = re.compile(r"[А-Яа-яЁё]")
 # ручные поправки к машинному переводу (Google путает контекст)
 CORRECTIONS = {
     "en": {"Близкие": "Contacts", "Мои близкие": "My contacts",
-           "нет связи": "no signal", "рекомендовано": "recommended"},
+           "нет связи": "no signal", "рекомендовано": "recommended",
+           # «метка» — единый термин: marker (не tag/mark/label)
+           "Метка в реальном времени": "Live location marker",
+           "Горный хайкер · метка": "Mountain Hiker · live marker",
+           "Метка хайкера — вид для близкого": "Hiker's live marker — view for a loved one",
+           "Кому отправлять метку": "Who to send the marker to",
+           "Отправить SOS-метку": "Send SOS marker",
+           "Отправить метку близким": "Send the marker to loved ones",
+           "Поход не начат — метка появится при старте":
+               "The hike hasn't started — the marker appears at start",
+           "Связь есть, но метку близким оставьте всё равно":
+               "There's signal — but send the marker to loved ones anyway",
+           "Сервер отключён — метка работает по ссылке":
+               "Server off — the marker works via the link",
+           "Ссылка-метка": "Marker link",
+           "Ссылка-метка текущего похода": "Marker link for the current hike",
+           "Метка:": "Marker:", ")}. Метка:": ")}. Marker:",
+           "⚠ Срок прошёл — отчитайтесь или отправьте метку":
+               "⚠ Deadline passed — check in or send the marker",
+           "✓ Сервер сохранён, метка обновляется":
+               "✓ Server saved — the marker updates live",
+           "Адрес сервера метки — живое обновление для близких":
+               "Marker server address — live updates for loved ones",
+           "Мы напомним вам отчитаться по таймеру похода, а при тревоге — отправим ему вашу метку.":
+               "We'll remind you to check in on the trip timer, and in an emergency "
+               "we'll send them your marker.",
+           "Срок возврата прошёл, а отметки нет. Приложение уже уведомило близких.":
+               "The return deadline passed with no check-in. The app has already alerted loved ones.",
+           "Ссылка повреждена или устарела. Попросите туриста отправить метку заново.":
+               "The link is broken or outdated. Ask the hiker to send the marker again.",
+           "Обновляйте страницу, чтобы увидеть свежую метку.":
+               "Refresh the page to see the latest marker.",
+           "Страница читает данные из самой ссылки — работает без сервера и без регистрации. Обновляйте страницу, чтобы увидеть свежую метку.":
+               "The page reads data from the link itself — no server or sign-up needed. "
+               "Refresh to see the latest marker.",
+           "Карта, чек-листы, SOS и метка работают без интернета. GPS-сигнал принимается и без сети — данные копятся локально и отправляются при появлении связи.":
+               "Map, checklists, SOS and the marker work without internet. GPS works offline "
+               "too — data is stored locally and sent when there's connection.",
+           "— карта, метка и SOS работают офлайн": "— map, marker and SOS work offline",
+           "Адрес страницы метки (по умолчанию — страница на GitHub Pages; можно заменить на свой)":
+               "Marker page address (defaults to GitHub Pages; you can set your own)",
+           "Адрес страницы метки (по умолчанию — локальная страница share.html; на проде — https://hiker.kz/t/)":
+               "Marker page address (defaults to local share.html; on prod — https://hiker.kz/t/)",
+           "Данные похода не найдены": "Trip data not found"},
     "kk": {"Близкие": "Жақындар", "Мои близкие": "Менің жақындарым",
-           "нет связи": "байланысыз", "рекомендовано": "ұсынылды"},
+           "нет связи": "байланысыз", "рекомендовано": "ұсынылды",
+           # «метка» — единый термин: белгі (не тег)
+           "Горный хайкер · метка": "Тау хайкері · белгі",
+           "Метка в реальном времени": "Нақты уақыт белгісі",
+           "Кому отправлять метку": "Белгіні кімге жіберу керек",
+           "Отправить SOS-метку": "SOS белгісін жіберу",
+           "Отправить метку близким": "Жақындарыңызға белгі жіберу",
+           "Связь есть, но метку близким оставьте всё равно":
+               "Байланыс бар, бірақ белгіні бәрібір жақындарыңызға жіберіңіз",
+           "Сервер отключён — метка работает по ссылке":
+               "Сервер өшірілген — белгі сілтеме арқылы жұмыс істейді",
+           "Ссылка-метка текущего похода": "Ағымдағы сапардың белгі сілтемесі",
+           "⚠ Срок прошёл — отчитайтесь или отправьте метку":
+               "⚠ Мерзімі өтті — хабарлаңыз немесе белгі жіберіңіз",
+           "— карта, метка и SOS работают офлайн":
+               "— карта, белгі және SOS желіден тыс жұмыс істейді",
+           "Адрес сервера метки — живое обновление для близких":
+               "Белгі серверінің мекенжайы — жақындарға тікелей жаңарту",
+           "Адрес страницы метки (по умолчанию — страница на GitHub Pages; можно заменить на свой)":
+               "Белгі бетінің мекенжайы (әдепкіде — GitHub Pages; өз бетіңізге ауыстыруға болады)",
+           "Адрес страницы метки (по умолчанию — локальная страница share.html; на проде — https://hiker.kz/t/)":
+               "Белгі бетінің мекенжайы (әдепкіде — жергілікті share.html; өнімде — https://hiker.kz/t/)"},
     "zh": {"Близкие": "联系人", "Мои близкие": "我的联系人",
            "нет связи": "无信号", "рекомендовано": "推荐"},
     "hi": {"Близкие": "संपर्क", "Мои близкие": "मेरे संपर्क",

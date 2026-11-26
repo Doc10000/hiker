@@ -376,6 +376,12 @@ function applyI18nInner() {
   // арабский — справа налево
   document.documentElement.dir = (LANG === 'ar') ? 'rtl' : 'ltr';
   const dict = LANG === 'ru' ? null : I18N[LANG];
+  // заголовок вкладки ( вне <body> — TreeWalker его не видит )
+  if (document.title) {
+    if (document._tSrc === undefined) document._tSrc = document.title;
+    const t = dict ? translateText(document._tSrc.trim(), dict) : document._tSrc;
+    if (document.title !== t) document.title = t;
+  }
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
   while (walker.nextNode()) nodes.push(walker.currentNode);
