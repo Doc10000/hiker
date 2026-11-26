@@ -26,7 +26,11 @@ import com.getcapacitor.annotation.PermissionCallback;
     name = "HikerNative",
     permissions = {
         @Permission(alias = "sms", strings = { Manifest.permission.SEND_SMS }),
-        @Permission(alias = "contacts", strings = { Manifest.permission.READ_CONTACTS })
+        @Permission(alias = "contacts", strings = { Manifest.permission.READ_CONTACTS }),
+        @Permission(alias = "loc", strings = {
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        })
     }
 )
 public class HikerNative extends Plugin {
@@ -130,6 +134,25 @@ public class HikerNative extends Plugin {
         }
         JSObject res = new JSObject();
         res.put("contacts", out);
+        call.resolve(res);
+    }
+
+    /** Запрос системного разрешения на геолокацию (для метки «вы» и трека). */
+    @PluginMethod
+    public void requestLocation(PluginCall call) {
+        if (getPermissionState("loc") == PermissionState.GRANTED) {
+            JSObject res = new JSObject();
+            res.put("granted", true);
+            call.resolve(res);
+            return;
+        }
+        requestPermissionForAlias("loc", call, "locPermissionCallback");
+    }
+
+    @PermissionCallback
+    public void locPermissionCallback(PluginCall call) {
+        JSObject res = new JSObject();
+        res.put("granted", getPermissionState("loc") == PermissionState.GRANTED);
         call.resolve(res);
     }
 }

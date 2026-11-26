@@ -281,7 +281,7 @@ function nav(id, opts) {
   if (id === 'family') renderFamily();
   if (id === 'history') renderHistory();
   if (id === 'mchs') renderMchs();
-  if (id === 'trip') renderTrip();
+  if (id === 'trip') { ensureLocation(); renderTrip(); }
   if (id === 'sos') initSos();
   if (id === 'route' && currentRoute) requestAnimationFrame(() => showRoute(currentRoute));
   window.scrollTo(0, 0);
@@ -520,6 +520,47 @@ function renderPoi(r) {
 document.getElementById('route-start').onclick = () => startTrip(currentRoute);
 document.getElementById('route-plan').onclick = () => planTrip(currentRoute);
 document.getElementById('route-checklist').onclick = () => { renderChecklist(currentRoute, 'view'); nav('checklist'); };
+
+/* ───────── полноэкранная карта ─────────
+   Кнопка ⛶ на карте похода/маршрута: карта разворачивается
+   на весь экран, по ней можно водить пальцем. */
+function toggleMapFs(wrapId, redraw) {
+  const wrap = document.getElementById(wrapId);
+  if (!wrap) return;
+  const full = wrap.classList.toggle('fs');
+  document.body.style.overflow = full ? 'hidden' : '';
+  const btn = wrap.querySelector('.map-fs');
+  if (btn) btn.textContent = full ? '✕' : '⛶';
+  // перерисовка после смены размера (Leaflet invalidateSize внутри draw)
+  requestAnimationFrame(() => requestAnimationFrame(() => redraw && redraw()));
+}
+document.getElementById('trip-map-fs').onclick = e => {
+  e.stopPropagation();
+  toggleMapFs('trip-map-wrap', () => {
+    if (!document.getElementById('screen-trip').hidden) renderTrip();
+  });
+};
+document.getElementById('route-map-fs').onclick = e => {
+  e.stopPropagation();
+  toggleMapFs('route-map-wrap', () => {
+    if (currentRoute && !document.getElementById('screen-route').hidden) showRoute(currentRoute);
+  });
+};
+
+/* ───────── права на геолокацию ─────────
+   Запрашиваем системное разрешение (в APK — через нативный плагин),
+   чтобы метка «вы» и трек появлялись на карте похода. */
+function ensureLocation() {
+  try {
+    const P = window.Capacitor && window.Capacitor.Plugins &&
+              window.Capacitor.Plugins.HikerNative;
+    if (P && P.requestLocation) {
+      P.requestLocation()
+        .then(r => { if (r && r.granted) startWatch(); })
+        .catch(() => {});
+    }
+  } catch (e) { /* веб — разрешение запросит сам браузер */ }
+}
 
 /* ───────── чек-лист (обязательный перед стартом) ───────── */
 let clState = {}; // {itemKey:true}
@@ -816,6 +857,7 @@ function beginTrip(r, withSms) {
   const trip = makeTrip(r);
   DB.set('trip', trip);
   startWatch();
+  pushTrack('ok');
   nav('trip');
   if (withSms) {
     sendSmsToAll(linkText()).then(res => toast(smsResultText(res)));
@@ -847,6 +889,11 @@ function startWatch() {
       const last = t.points[t.points.length - 1];
       if (!last || Math.abs(last.lat - t.pos.lat) + Math.abs(last.lng - t.pos.lng) > 0.0003)
         t.points.push({ lat: t.pos.lat, lng: t.pos.lng, at: Date.now() });
+      // живая метка: шлём позицию на сервер раз в минуту
+      if (Date.now() - (t.lastPush || 0) >= 60000) {
+        t.lastPush = Date.now();
+        pushTrack(t.active ? 'ok' : 'arrived');
+      }
       DB.set('trip', t);
       if (!document.getElementById('screen-trip').hidden) renderTrip();
     },
@@ -902,21 +949,18 @@ function renderTrip() {
     <div class="stat"><b>${t.pos ? '±' + Math.round(t.pos.acc) + ' м' : 'нет'}</b><span>точность GPS</span></div>
     <div class="stat"><b>${r.km}</b><span>км по плану</span></div>`;
 
-  // overdue-бокс
+  // overdue-бокс (саму тревогу шлёт checkTripClock — таймер, а не экран)
   const ob = document.getElementById('trip-overdue');
   ob.hidden = !overdue;
-  if (overdue && !t.notified) {
-    t.notified = true; DB.set('trip', t);
-    IncidentService.report('OVERDUE', {
-      loc: t.pos ? { lat: t.pos.lat, lon: t.pos.lng, accuracy_m: Math.round(t.pos.acc) } : null,
-      route: r.id, deadline: new Date(t.deadline).toISOString()
-    });
+  if (overdue) {
     const p = DB.get('profile', {});
     document.getElementById('trip-overdue-text').textContent =
       `По плану вы должны были вернуться в ${new Date(t.deadline).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}. ` +
-      (p.contactName ? `Мы подготовили сообщение для ${p.contactName}.` : 'Добавьте контакт близкого.');
+      (t.notified ? `Тревога уже ушла${t.sosLevel > 1 ? ' (повтор ' + t.sosLevel + '/3)' : ''}. ` : '') +
+      (p.contactName ? `Сообщение для ${p.contactName} подготовлено.` : 'Добавьте контакт близкого.');
   }
   document.getElementById('trip-track').hidden = !t.pos;
+  checkTripClock();
 }
 function fmtLeft(ms) {
   const m = Math.max(0, Math.floor(ms / 60000));
@@ -924,10 +968,71 @@ function fmtLeft(ms) {
   return h > 0 ? `${h} ч ${m % 60} мин` : `${m} мин`;
 }
 
+/* ───────── автотревога: не отметился в срок ─────────
+   Тикает каждую минуту (независимо от экрана):
+   - за 30 мин до срока — напоминание «отметь, что дошёл»;
+   - срок прошёл — авто-SMS всем отмеченным контактам;
+   - повтор каждые 30 мин, всего3 попытки. */
+const OVERDUE_REPEAT_MS = 30 * 60000;
+const OVERDUE_MAX = 3;
+
+function overdueMessage(t) {
+  const p = DB.get('profile', {});
+  const r = rById(t.routeId);
+  const who = new Date(t.deadline).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+  return `ПРОСРОЧКА! ${p.name || 'Турист'} не отметился, что дошёл. ` +
+    `Маршрут: ${r ? r.name : '-'}. План был вернуться до ${who}. ` +
+    `Метка: ${tripLink() || '—'}`;
+}
+
+function checkTripClock() {
+  const t = DB.get('trip', null);
+  if (!t || !t.active) return;
+  const now = Date.now();
+  const left = t.deadline - now;
+
+  // напоминание за 30 минут до срока
+  if (left > 0 && left <= 30 * 60000 && !t.reminded) {
+    t.reminded = true;
+    DB.set('trip', t);
+    toast('⏰ Через 30 мин срок возврата — отметь, что дошёл');
+    pushTrack('ok');
+  }
+
+  if (left > 0) return;
+
+  // срок прошёл — либо первый раз, либо прошло ≥30 мин с прошлой тревоги
+  const since = t.lastOverdueSms || 0;
+  const attempts = t.overdueAttempts || 0;
+  if (t.notified && (now - since < OVERDUE_REPEAT_MS || attempts >= OVERDUE_MAX)) return;
+
+  const r = rById(t.routeId);
+  t.notified = true;
+  t.lastOverdueSms = now;
+  t.overdueAttempts = attempts + 1;
+  t.sosLevel = t.overdueAttempts;
+  DB.set('trip', t);
+
+  IncidentService.report('OVERDUE', {
+    loc: t.pos ? { lat: t.pos.lat, lon: t.pos.lng, accuracy_m: Math.round(t.pos.acc) } : null,
+    route: t.routeId,
+    deadline: new Date(t.deadline).toISOString(),
+    attempt: t.overdueAttempts
+  });
+  pushTrack('overdue');
+
+  const msg = overdueMessage(t);
+  sendSmsToAll(msg).then(res => {
+    toast(`⏱ Тревога ${t.overdueAttempts}/${OVERDUE_MAX}: ` + smsResultText(res));
+    if (!document.getElementById('screen-trip').hidden) renderTrip();
+  });
+}
+
 document.getElementById('trip-report').onclick = () => {
   const t = DB.get('trip', null); if (!t) return;
   t.active = false;
   IncidentService.report('SAFE_RETURN', { route: t.routeId, loc: t.pos ? { lat: t.pos.lat, lon: t.pos.lng } : null });
+  pushTrack('arrived');
   const hist = DB.get('history', []);
   hist.unshift({ routeId: t.routeId, at: t.startedAt, minutes: Math.round((Date.now() - t.startedAt) / 60000), points: t.points.length });
   DB.set('history', hist);
@@ -952,7 +1057,8 @@ function buildLink(trip, r) {
   const payload = {
     n: p.name, c: p.contactName, ph: p.contactPhone, r: r ? r.name : '',
     p: (trip.points || []).slice(-40).map(pt => [+pt.lat.toFixed(5), +pt.lng.toFixed(5), Math.round(pt.at / 60000)]),
-    d: Math.round(trip.deadline / 60000), s: Math.round(trip.startedAt / 60000)
+    d: Math.round(trip.deadline / 60000), s: Math.round(trip.startedAt / 60000),
+    srv: serverBase(), tid: trip.linkId || ''
   };
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const raw = (DB.get('linkBase', 'share.html#') || 'share.html#').replace(/#$/, '');
@@ -1015,6 +1121,7 @@ document.getElementById('sos-send').onclick = () => {
   const p = DB.get('profile', {});
   const loc = t && t.pos ? { lat: t.pos.lat, lon: t.pos.lng, accuracy_m: Math.round(t.pos.acc) } : null;
   const ev = IncidentService.report('SOS', { loc, route: t ? t.routeId : null, deadline: t ? new Date(t.deadline).toISOString() : null });
+  pushTrack('sos');
 
   const st = document.querySelectorAll('#sos-channels .ch-status');
   const coords = loc ? `${loc.lat.toFixed(5)}, ${loc.lon.toFixed(5)}` : 'координаты уточняются';
@@ -1262,6 +1369,10 @@ function toast(msg) {
   setInterval(() => {
     if (!document.getElementById('screen-trip').hidden) renderTrip();
   }, 30000);
+
+  // автотревога: тикает даже когда экран похода закрыт
+  setInterval(checkTripClock, 60000);
+  checkTripClock();
 
   const p = DB.get('profile', null);
   if (p) { resumeWatch(); nav('home'); } else { nav('onboarding'); obRender(); }

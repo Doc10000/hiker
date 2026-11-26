@@ -140,22 +140,36 @@ const ROUTES = [
 ];
 
 /* ─────────────────────────────────────────────
-   Тропы: из опорных точек строим плавную «живую» линию тропы
-   с боковыми отклонениями — карта читается как настоящий маршрут.
+   Тропы: по опорным точкам OSM строим плавную кривую
+   Катмулла-Рома — получается плотная «живая» линия трека
+   (~8 точек на сегмент), по ней можно вести пальцем.
    ───────────────────────────────────────────── */
-function trailPath(anchors, wobble) {
-  const out = [anchors[0]];
+function trailPath(anchors, wobble, per) {
+  if (!anchors || anchors.length < 2) return (anchors || []).slice();
   const w = wobble == null ? 1 : wobble;
-  for (let i = 0; i < anchors.length - 1; i++) {
-    const a = anchors[i], b = anchors[i + 1];
-    const dx = b[0] - a[0], dy = b[1] - a[1];
-    const len = Math.hypot(dx, dy) || 1e-6;
-    const nx = -dy / len, ny = dx / len;
-    const off = w * len * 0.17 * Math.sin(i * 1.9 + 0.6);
-    const mx = (a[0] + b[0]) / 2 + nx * off;
-    const my = (a[1] + b[1]) / 2 + ny * off;
-    out.push([mx, my], b);
+  const n = per || 8;
+  // удваиваем края, чтобы кривая проходила через первую и последнюю точки
+  const p = [anchors[0], ...anchors, anchors[anchors.length - 1]];
+  const out = [];
+  const seg = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+
+  for (let i = 1; i < p.length - 2; i++) {
+    const p0 = p[i - 1], p1 = p[i], p2 = p[i + 1], p3 = p[i + 2];
+    const span = seg(p0, p3) || 1e-6;
+    for (let s = 0; s < n; s++) {
+      const t = s / n, t2 = t * t, t3 = t2 * t;
+      const lat = 0.5 * ((2 * p1[0]) + (-p0[0] + p2[0]) * t +
+        (2 * p0[0] - 5 * p1[0] + 4 * p2[0] - p3[0]) * t2 +
+        (-p0[0] + 3 * p1[0] - 3 * p2[0] + p3[0]) * t3);
+      const lng = 0.5 * ((2 * p1[1]) + (-p0[1] + p2[1]) * t +
+        (2 * p0[1] - 5 * p1[1] + 4 * p2[1] - p3[1]) * t2 +
+        (-p0[1] + 3 * p1[1] - 3 * p2[1] + p3[1]) * t3);
+      // лёгкое боковое отклонение (~15–25 м) — тропа выглядит естественно
+      const off = w * span * 0.03 * Math.sin((i * n + s) * 0.7 + i);
+      out.push([lat + off, lng + off * 0.6]);
+    }
   }
+  out.push(anchors[anchors.length - 1]);
   return out;
 }
 

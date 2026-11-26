@@ -187,6 +187,23 @@ input{font:inherit}
   background:rgba(11,15,20,.82); backdrop-filter:blur(8px); padding:6px 12px;
   border-radius:999px; color:var(--dim); border:1px solid #ffffff14;
 }
+/* полноэкранная карта */
+.map-fs{
+  position:absolute; right:10px; bottom:34px; z-index:1200; width:38px; height:38px;
+  border-radius:11px; background:rgba(11,15,20,.86); border:1px solid #ffffff26;
+  color:var(--fg); font-size:17px; backdrop-filter:blur(6px); box-shadow:0 4px 14px #000a;
+  display:grid; place-items:center; padding:0;
+}
+.map-fs:active{transform:scale(.93)}
+.map-wrap.fs{
+  position:fixed; inset:0; z-index:900; border-radius:0; border:none; margin:0;
+  height:100vh !important; box-shadow:none;
+}
+.map-wrap.fs .leaflet-host, .map-wrap.fs canvas{height:100vh !important}
+.map-wrap.fs .map-fs{
+  top:calc(var(--sb) + 12px); bottom:auto; right:14px; width:44px; height:44px; font-size:20px;
+}
+.map-wrap.fs .map-legend{bottom:calc(var(--sb) + 16px); left:14px; font-size:12px}
 .lg-start{color:var(--acc)} .lg-you{color:var(--danger)} .lg-end{color:var(--acc2)}
 /* тёмные контролы Leaflet */
 .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#161b22; color:var(--fg); border:1px solid var(--line); box-shadow:0 6px 18px #000a}
