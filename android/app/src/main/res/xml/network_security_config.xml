@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Разрешаем незашифрованный HTTP только локальному серверу метки:
+  127.0.0.1 / localhost  — сервер на той же машине
+  10.0.2.2               — хост машины из-под эмулятора Android
+  Всё остальное — только HTTPS (base-config ниже).
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

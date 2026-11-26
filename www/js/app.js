@@ -140,10 +140,21 @@ function pushTrack(status) {
     deadline: t.deadline || null,
     startedAt: t.startedAt || null
   };
+  const json = JSON.stringify(body);
+  // в APK — нативный POST (иначе WebView режет http:// как mixed content)
+  try {
+    const P = window.Capacitor && window.Capacitor.Plugins &&
+              window.Capacitor.Plugins.HikerNative;
+    if (P && P.trackPush) {
+      return P.trackPush({ url: base + '/api/track', body: json })
+        .then(r => (r && r.ok ? { ok: true } : null))
+        .catch(() => null);
+    }
+  } catch (e) { /* веб — идём через fetch */ }
   return fetch(base + '/api/track', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
+    body: json
   }).then(res => res.json()).catch(() => null);
 }
 

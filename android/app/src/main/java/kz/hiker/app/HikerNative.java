@@ -17,6 +17,13 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.annotation.Permission;
 import com.getcapacitor.annotation.PermissionCallback;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Нативный плагин «Горный хайкер»:
  *  - sendSms   : отправка SMS напрямую из приложения (без открытия приложения «Сообщения»)
@@ -154,5 +161,49 @@ public class HikerNative extends Plugin {
         JSObject res = new JSObject();
         res.put("granted", getPermissionState("loc") == PermissionState.GRANTED);
         call.resolve(res);
+    }
+
+    /**
+     * Отправка состояния похода на локальный сервер метки.
+     * Нужна из-за mixed content: приложение грузится с https://localhost,
+     * а fetch на http://... блокируется WebView — поэтому POST делаем нативно.
+     */
+    @PluginMethod
+    public void trackPush(PluginCall call) {
+        String url = call.getString("url");
+        String body = call.getString("body");
+        if (url == null || body == null) {
+            call.reject("нужны url и body");
+            return;
+        }
+        HttpURLConnection conn = null;
+        try {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod("POST");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Content-Type", "application/json; charset=utf-8");
+            OutputStream os = conn.getOutputStream();
+            os.write(body.getBytes(StandardCharsets.UTF_8));
+            os.close();
+
+            int code = conn.getResponseCode();
+            StringBuilder sb = new StringBuilder();
+            try (BufferedReader br = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                String line;
+                while ((line = br.readLine()) != null) sb.append(line);
+            }
+            JSObject res = new JSObject();
+            res.put("ok", code >= 200 && code < 300);
+            res.put("http", code);
+            res.put("raw", sb.toString());
+            call.resolve(res);
+        } catch (Exception e) {
+            call.reject("push failed: " + e.getMessage());
+        } finally {
+            if (conn != null) conn.disconnect();
+        }
     }
 }
