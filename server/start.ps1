@@ -1,4 +1,4 @@
-# start.ps1 — поднимает сервер метки + публичный туннель cloudflared
+﻿# start.ps1 — поднимает сервер метки + публичный туннель cloudflared
 # Запуск:  powershell -ExecutionPolicy Bypass -File server\start.ps1
 # После запуска печатает адрес — его вписать в приложение:
 #   «Близкие» → «Адрес сервера метки»

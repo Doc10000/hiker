@@ -1,4 +1,4 @@
-# create_avd.ps1 — создаёт виртуальное устройство и ставит APK
+﻿# create_avd.ps1 — создаёт виртуальное устройство и ставит APK
 # UTF-8 с BOM
 $ErrorActionPreference = "Stop"
 

@@ -1,4 +1,4 @@
-# build.ps1 — сборка APK «Горный хайкер»
+﻿# build.ps1 — сборка APK «Горный хайкер»
 # ВНИМАНИЕ: файл в UTF-8 с BOM (иначе PowerShell 5.1 ломает кириллицу)
 $ErrorActionPreference = "Stop"
 

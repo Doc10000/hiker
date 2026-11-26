@@ -1,4 +1,4 @@
-# setup.ps1 — разовая установка Android SDK (эмулятор + платформы)
+﻿# setup.ps1 — разовая установка Android SDK (эмулятор + платформы)
 # UTF-8 с BOM
 $ErrorActionPreference = "Stop"
 
