@@ -1090,7 +1090,15 @@ document.getElementById('trip-sos').onclick = () => nav('sos');
 document.getElementById('trip-track').onclick = () => { shareText(linkText()); };
 
 /* ───────── ссылка-метка ─────────
-   Данные похода кодируются в саму ссылку → работает без сервера. */
+   Данные похода кодируются в саму ссылку → работает без сервера.
+   База обязана быть абсолютной: относительная ссылка на телефоне
+   родного не откроется (у приложения свой file:// origin). */
+const SHARE_BASE = 'https://doc10000.github.io/hiker/www/share.html';
+function linkBaseRaw() {
+  let v = String(DB.get('linkBase', '') || '').trim().replace(/#$/, '');
+  if (!/^https?:\/\//i.test(v)) v = SHARE_BASE;   // пусто или «share.html#» → Pages
+  return v.replace(/#$/, '');
+}
 function buildLink(trip, r) {
   const p = DB.get('profile', {});
   const payload = {
@@ -1100,7 +1108,7 @@ function buildLink(trip, r) {
     srv: serverBase(), tid: trip.linkId || '', lng: LANG
   };
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  const raw = (DB.get('linkBase', 'share.html#') || 'share.html#').replace(/#$/, '');
+  const raw = linkBaseRaw();
   return raw.endsWith('/') ? raw + b64 : raw + '#' + b64;
 }
 function tripLink() {
@@ -1204,7 +1212,7 @@ function renderFamily() {
   const p = DB.get('profile', {});
   document.getElementById('fam-name').value = '';
   document.getElementById('fam-phone').value = '';
-  document.getElementById('fam-base').value = DB.get('linkBase', 'share.html#');
+  document.getElementById('fam-base').value = linkBaseRaw();
   const t = DB.get('trip', null);
   document.getElementById('fam-link').textContent =
     (t && t.active) ? tripLink() : 'Поход не начат — метка появится при старте';
