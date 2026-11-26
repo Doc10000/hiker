@@ -321,12 +321,44 @@ function tk(s) {
  * Точный перевод, иначе — подстановка русских фрагментов.
  * Покрывает и статичные строки, и динамические (шаблоны с ${...}),
  * потому что куски шаблонов тоже лежат в словаре.
+ *
+ * Две защиты от порчи текста:
+ *  1) ведущие знаки (эмодзи «⛔», маркер «•», тире) не входят в ключ словаря —
+ *     сначала пробуем точное совпадение без них;
+ *  2) фрагменты заменяются только на границах слов: «вы» не трогается
+ *     внутри «выходите», «маршрут» — внутри «маршрута».
  */
 const _fragKeys = {};
+const _LEAD = /^[^0-9A-Za-zА-Яа-яЁё]+/;      // эмодзи, маркеры, пробелы в начале
+const _CYRL = /[А-Яа-яЁё]/;
+
+/** Замена k → v только там, где k не встроена в более длинное русское слово */
+function _replaceWhole(text, k, v) {
+  let out = '', i = 0;
+  for (;;) {
+    const j = text.indexOf(k, i);
+    if (j === -1) { out += text.slice(i); return out; }
+    const before = j > 0 ? text[j - 1] : '';
+    const after = text[j + k.length] || '';
+    const embedded = _CYRL.test(before) || _CYRL.test(after);
+    out += text.slice(i, j) + (embedded ? k : v);
+    i = j + k.length;
+  }
+}
+
 function translateText(s, dict) {
   if (!dict) return s;
   const exact = dict[s];
   if (exact !== undefined) return exact;
+
+  // «⛔ Сегодня в горы не стоит», « • Гроза: …», « — Маршрут …»
+  const lead = _LEAD.exec(s);
+  const prefix = (lead && lead[0].length < s.length) ? lead[0] : '';
+  if (prefix) {
+    const e2 = dict[s.slice(prefix.length)];
+    if (e2 !== undefined) return prefix + e2;
+  }
+
   let keys = _fragKeys[LANG];
   if (!keys) {
     keys = Object.keys(dict).filter(k => k.length >= 2)
@@ -335,7 +367,7 @@ function translateText(s, dict) {
   }
   let out = s;
   for (const k of keys) {
-    if (out.indexOf(k) !== -1) out = out.split(k).join(dict[k]);
+    if (out.indexOf(k) !== -1) out = _replaceWhole(out, k, dict[k]);
   }
   return out;
 }

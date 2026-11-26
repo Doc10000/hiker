@@ -77,15 +77,16 @@
 - `localStorage` + **локальный сервер метки** (Python) с публичным туннелем
 - `IncidentService`: единый формат, канал «112» = один POST
 - Авто-SMS: нативный плагин `SmsManager` + `ContactsContract`
+- **Погода: Open-Meteo** (без ключа) → вердикт «идти / не идти» и **+к риску**
 
 ---
 
 ## Слайд9 · Инструменты и библиотеки (п.6.3 — обязательно)
-- **Библиотеки:** Leaflet1.9.4 · OpenStreetMap (ODbL) · Capacitor7
-- **API:** Geolocation · localStorage · Service Worker · Fetch
+- **Библиотеки:** Leaflet1.9.4 · OpenStreetMap (ODbL) · Capacitor7 · **Open-Meteo** (CC BY4.0)
+- **API:** Geolocation · localStorage · Service Worker · Fetch · Open-Meteo Forecast API
 - **AI:** код генерировался AI-ассистентом **OpenCode**
 - **Шаблоны/no-code:** не использовались — весь код наш
-- **Лицензии:** Apache-2.0 / MIT / ODbL с атрибуцией
+- **Лицензии:** Apache-2.0 / MIT / ODbL / CC BY4.0 с атрибуцией
 
 ---
 

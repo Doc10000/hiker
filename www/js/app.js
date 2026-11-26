@@ -235,8 +235,16 @@ function assessRisk(r) {
   if (gear.includes('none')) { score += 10; reasons.push({ t: 'В онбординге отмечено «почти ничего»', s: 10 }); }
   if (!notifyPhones().length) { score += 10; reasons.push({ t: 'Не указан контакт для уведомления', s: 10 }); }
 
+  /* погода на маршруте — из свежего или кэшированного прогноза */
+  const wxW = Weather.cached(r);
+  const wxA = wxW ? Weather.assess(wxW) : null;
+  if (wxA) {
+    score += wxA.score;
+    for (const x of wxA.reasons) reasons.push({ t: x.t, s: x.s });
+  }
+
   score = Math.min(100, score);
-  return { score, reasons: reasons.sort((a, b) => b.s - a.s), cat: riskCat(score), level: lvl };
+  return { score, reasons: reasons.sort((a, b) => b.s - a.s), cat: riskCat(score), level: lvl, wx: wxA };
 }
 
 /** Маршруты полегче — если риск выше среднего */
@@ -494,6 +502,56 @@ document.addEventListener('click', e => {
 let currentRoute = null;
 function rById(id) { return ROUTES.find(r => r.id === id); }
 
+/* ───────── погода ───────── */
+function wxAgo(at) {
+  if (!at) return '';
+  const m = Math.round((Date.now() - at) / 60000);
+  if (m <= 1) return 'только что';
+  if (m < 60) return m + ' мин назад';
+  return Math.round(m / 60) + ' ч назад';
+}
+
+/** Карточка погоды с вердиктом «можно ли идти в горы» */
+function wxCard(w, r, opts) {
+  opts = opts || {};
+  const a = w ? Weather.assess(w) : null;
+  if (!a) {
+    return `<div class="wx-card none"><span class="wx-ic">📡</span>
+      <div class="wx-body"><b>Погода загружается…</b>
+      <span>Прогноз для точки старта маршрута</span></div></div>`;
+  }
+  const adv = (opts.advice === false ? [] : a.advice).slice(0, 3);
+  const sign = a.verdict === 'ok' ? '✅' : a.verdict === 'warn' ? '⚠️' : '⛔';
+  const wind = 'ветер ' + (a.wind == null ? '—' : a.wind) + ' км/ч' +
+    (a.gust ? ', порывы до ' + a.gust : '');
+  // вложенных шаблонов быть не может: парсер i18n вырезает строки по backtick
+  const advHtml = adv.length
+    ? '<div class="wx-adv">' + adv.map(x => '<div>• ' + esc(x) + '</div>').join('') + '</div>'
+    : '';
+  const updHtml = opts.upd === false ? '' :
+    '<div class="wx-upd">' + ('Прогноз обновлён ' + wxAgo(w.at) + ' · Open-Meteo') + '</div>';
+  return `<div class="wx-card ${a.verdict}">
+    <div class="wx-top">
+      <span class="wx-ic">${a.icon}</span>
+      <div class="wx-deg"><b>${a.temp == null ? '—' : a.temp + '°C'}</b>
+        <span>${a.feels == null ? '' : 'ощущается ' + a.feels + '°C'}</span></div>
+      <div class="wx-txt"><b>${esc(a.text)}</b><span>${wind}</span></div>
+    </div>
+    <div class="wx-verdict">${sign} ${esc(a.verdictT)}</div>
+    ${advHtml}
+    ${updHtml}
+  </div>`;
+}
+
+/** Погода в фоне: сначала кэш, потом свежий прогноз.
+    В DOM лезем только если разметка реально изменилась — renderTrip тикает каждую минуту. */
+function loadWeather(r, box, opts) {
+  if (!box) return;
+  const put = html => { if (box.innerHTML !== html) { box.innerHTML = html; applyI18n(); } };
+  put(wxCard(Weather.cached(r), r, opts));
+  Weather.load(r).then(w => { if (box.isConnected) put(wxCard(w, r, opts)); });
+}
+
 function showRoute(r) {
   document.getElementById('route-name').textContent = r.name;
   const canvas = document.getElementById('route-map');
@@ -513,6 +571,9 @@ function showRoute(r) {
     `<span class="chip">Ваш уровень: ${levelLabel(info.level)}</span>
      <span class="chip ${risk.cat.i >= 2 ? 'warn' : risk.cat.i === 1 ? '' : 'ok'}">Риск: ${risk.cat.t}</span>
      <span class="chip">Пройдено ${info.done} ${plural(info.done)}</span>`;
+
+  // погода и вердикт «можно ли идти» — из кэша сразу, свежий прогноз фоном
+  loadWeather(r, document.getElementById('route-weather'));
 
   document.getElementById('route-stats').innerHTML = `
     <div class="stat"><b>${r.days}</b><span>дней</span></div>
@@ -740,6 +801,7 @@ document.getElementById('cl-share').onclick = () => {
 let watchId = null;
 let pendingRoute = null;
 let pendingAction = 'start';
+let wxConfirmed = false;   // подтверждение «всё равно идти» при опасной погоде
 
 function tripHours(r) { return r.days >= 3 ? 72 : r.days === 2 ? 36 : 12; }
 
@@ -772,8 +834,13 @@ function planTrip(r) {
 
 function openRisk(r) {
   pendingRoute = r;
+  wxConfirmed = false;
   renderRisk(r);
   nav('risk');
+  // прогноз мог не успеть загрузиться — подтягиваем и перерисовываем оценку
+  Weather.load(r).then(() => {
+    if (pendingRoute === r && !document.getElementById('screen-risk').hidden) renderRisk(r);
+  });
 }
 
 /* ───────── экран: уровень и риски ───────── */
@@ -789,6 +856,13 @@ function renderRisk(r) {
   g.innerHTML = `<div class="risk-score">${risk.score}<span>/100</span></div>
     <div class="risk-cat">${risk.cat.t} риск</div>
     <div class="prog-track"><i style="width:${risk.score}%"></i></div>`;
+
+  // погода: вердикт «можно ли идти в горы» и её вклад в оценку
+  const wBox = document.getElementById('risk-weather');
+  if (wBox) {
+    const wxRaw = Weather.cached(r);   // wxCard ждёт сырой прогноз, не оценку
+    wBox.innerHTML = wxCard(wxRaw, r, { advice: risk.wx && risk.wx.verdict !== 'ok' });
+  }
 
   document.getElementById('risk-reasons').innerHTML = risk.reasons.length
     ? risk.reasons.map(x => `<div class="risk-item ${x.s >= 15 ? 'bad' : ''}">
@@ -819,12 +893,25 @@ function renderRisk(r) {
       </div>`).join('');
   }
 
-  document.getElementById('risk-next').textContent =
-    pendingAction === 'plan' ? 'Ок, планируем' : 'Понял, продолжить';
+  const nx = document.getElementById('risk-next');
+  const wxA = risk.wx;
+  const blocked = wxA && wxA.verdict === 'bad';
+  nx.className = 'btn big ' + (blocked && wxConfirmed ? 'danger' : 'primary');
+  nx.textContent = blocked && wxConfirmed ? 'Всё равно идти'
+    : pendingAction === 'plan' ? 'Ок, планируем' : 'Понял, продолжить';
 }
 
 document.getElementById('risk-next').onclick = () => {
   if (!pendingRoute) { back(); return; }
+  // опасная погода: одна попытка не проходит — нужен явный отказ от рекомендации
+  const w = Weather.cached(pendingRoute);
+  const a = w ? Weather.assess(w) : null;
+  if (a && a.verdict === 'bad' && !wxConfirmed) {
+    wxConfirmed = true;
+    renderRisk(pendingRoute);
+    toast('Погода в горах опасна — подтвердите, что понимаете риск');
+    return;
+  }
   renderChecklist(pendingRoute, 'gate');   // дальше — только через обязательный чек-лист
   nav('checklist');
 };
@@ -986,6 +1073,9 @@ function renderTrip() {
     <div class="stat"><b>${t.points.length}</b><span>точек трека</span></div>
     <div class="stat"><b>${t.pos ? '±' + Math.round(t.pos.acc) + ' м' : 'нет'}</b><span>точность GPS</span></div>
     <div class="stat"><b>${r.km}</b><span>км по плану</span></div>`;
+
+  // погода в походе — компактно, без списков советов
+  loadWeather(r, document.getElementById('trip-weather'), { advice: false });
 
   // overdue-бокс (саму тревогу шлёт checkTripClock — таймер, а не экран)
   const ob = document.getElementById('trip-overdue');

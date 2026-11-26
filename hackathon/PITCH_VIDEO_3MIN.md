@@ -38,7 +38,7 @@
 ## Титры (напечатать поверх)
 
 - В начале: **«Кейс2. Путешествие по Казахстану · hackathon.kz»**
-- На слайде с инструментами (3–4 сек): **«Leaflet · OpenStreetMap (ODbL) · Capacitor · AI: OpenCode»**
+- На слайде с инструментами (3–4 сек): **«Leaflet · OpenStreetMap (ODbL) · Capacitor · Open-Meteo · AI: OpenCode»**
 - В конце: **«Прототип»** + QR, **«Код: github.com/Doc10000/hiker»**
 
 ---
