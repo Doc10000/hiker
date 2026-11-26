@@ -526,6 +526,8 @@ function showRoute(r) {
   const planBtn = document.getElementById('route-plan');
   planBtn.hidden = !!active;
   planBtn.disabled = !!active;
+
+  applyI18n();   // showRoute вызывается через rAF — переводим после него
 }
 function renderPoi(r) {
   const el = document.getElementById('route-poi');
@@ -622,6 +624,7 @@ function updateClProgress() {
   btn.textContent = (done < all || !ack)
     ? 'Ещё не всё готово'
     : (pendingAction === 'plan' ? 'Дальше — дата похода' : 'Дальше — уведомить близких');
+  applyI18n();
 }
 
 /* ───────── единое окно рекомендаций (внутри списка снаряжения) ───────── */
@@ -932,6 +935,7 @@ function renderTrip() {
     document.getElementById('trip-stats').innerHTML = '';
     document.getElementById('trip-live').hidden = true;
     document.getElementById('trip-overdue').hidden = true;
+    applyI18n();
     return;
   }
   const r = rById(t.routeId);
@@ -979,6 +983,7 @@ function renderTrip() {
       (p.contactName ? `Сообщение для ${p.contactName} подготовлено.` : 'Добавьте контакт близкого.');
   }
   document.getElementById('trip-track').hidden = !t.pos;
+  applyI18n();
   checkTripClock();
 }
 function fmtLeft(ms) {
@@ -1077,7 +1082,7 @@ function buildLink(trip, r) {
     n: p.name, c: p.contactName, ph: p.contactPhone, r: r ? r.name : '',
     p: (trip.points || []).slice(-40).map(pt => [+pt.lat.toFixed(5), +pt.lng.toFixed(5), Math.round(pt.at / 60000)]),
     d: Math.round(trip.deadline / 60000), s: Math.round(trip.startedAt / 60000),
-    srv: serverBase(), tid: trip.linkId || ''
+    srv: serverBase(), tid: trip.linkId || '', lng: LANG
   };
   const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   const raw = (DB.get('linkBase', 'share.html#') || 'share.html#').replace(/#$/, '');
@@ -1367,6 +1372,9 @@ function toast(msg) {
     document.body.appendChild(el);
   }
   el.textContent = msg;
+  // источник для переводчика = текущий текст тоста
+  if (el.firstChild) el.firstChild._src = msg;
+  applyI18n();
   el.classList.remove('show');
   void el.offsetWidth; // перезапуск анимации
   el.classList.add('show');

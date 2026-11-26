@@ -1,0 +1,456 @@
+=== STATIC (314) ===
+[index.html] Ещё
+[index.html] Имя
+[js/app.js] дн.
+[js/app.js] нет
+[js/app.js] выкл
+[js/app.js] есть
+[index.html] ● вы
+[index.html] Далее
+[index.html] Назад
+[index.html] Поиск
+[index.html] Поход
+[js/data.js] Профи
+[index.html] готов
+[js/app.js] поход
+[js/app.js] через
+[js/app.js] Айгуль
+[index.html] Дальше
+[index.html] Звонок
+[js/app.js] Начать
+[js/app.js] Низкий
+[index.html] Привет
+[js/data.js] Туалет
+[js/app.js] Турист
+[js/app.js] лёгкий
+[js/app.js] похода
+[js/app.js] хайкер
+[index.html] ● идёт
+[js/app.js] (повтор
+[js/data.js] turgень
+[index.html] Аптечка
+[index.html] Близкие
+[js/app.js] Близкий
+[js/app.js] Высокий
+[index.html] Запуск:
+[index.html] Маршрут
+[js/data.js] Новичок
+[js/data.js] Опытный
+[index.html] Палатка
+[js/app.js] Привет,
+[js/app.js] Средний
+[index.html] Телефон
+[js/app.js] походов
+[js/app.js] сложный
+[js/app.js] средний
+[index.html] ● старт
+[index.html] ● финиш
+[index.html] Более 10
+[index.html] Маршруты
+[js/app.js] Найдено:
+[index.html] Спальник
+[index.html] Шлюз МЧС
+[js/app.js] критично
+[js/app.js] , ошибок:
+[index.html] Ни одного
+[index.html] Пауэрбанк
+[index.html] в очереди
+[js/app.js] отправка…
+[js/app.js] + добавить
+[index.html] Вернусь до
+[js/data.js] Кок-Жайляу
+[index.html] Копировать
+[index.html] Продолжить
+[js/data.js] Река Шарын
+[index.html] Снаряжение
+[index.html] Что взять?
+[js/app.js] отправлено
+[js/app.js] точность ±
+[js/app.js] Введите имя
+[index.html] Мои близкие
+[js/app.js] Отправлено:
+[index.html] Профи / гид
+[js/data.js] Река Көлсай
+[js/app.js] добавлено ✓
+[js/app.js] оч. сложный
+[js/app.js] ✓ Добавлен:
+[js/app.js] ✓ уведомить
+[index.html] SMS близкому
+[js/data.js] Вид на озеро
+[index.html] Все маршруты
+[index.html] Выбрать всех
+[index.html] Из контактов
+[index.html] Имя близкого
+[index.html] Начать поход
+[index.html] Офлайн-режим
+[index.html] Оценка риска
+[index.html] Почти ничего
+[js/data.js] Река Тургень
+[index.html] Ссылка-метка
+[js/app.js] время пришло
+[js/app.js] уведомлять ✓
+[index.html] ✓ Я вернулся
+[js/app.js] Введите адрес
+[js/data.js] Вода / родник
+[index.html] Горный хайкер
+[index.html] Запланировано
+[index.html] Запланировать
+[index.html@ph] Имя или номер
+[index.html] Начать сейчас
+[js/app.js] Неверная дата
+[js/data.js] Озеро Қайыңды
+[index.html] Отправить SMS
+[js/app.js] Очень высокий
+[js/app.js] без координат
+[js/data.js] июль – август
+[js/data.js] май – октябрь
+[js/app.js] нет контактов
+[js/app.js] рекомендуется
+[index.html] 👥 Мои близкие
+[index.html] Как вас зовут?
+[index.html] Кому сообщить,
+[index.html] Назад к походу
+[index.html] Начать без SMS
+[js/app.js] Поход не начат
+[index.html] Формат события
+[js/data.js] Экопост Түрген
+[js/data.js] день + перекус
+[js/data.js] июнь – октябрь
+[js/app.js] SOS скопировано
+[js/data.js] Ак-Булак, старт
+[js/app.js] Введите телефон
+[index.html] История походов
+[index.html] Кого уведомить?
+[index.html] Службы спасения
+[js/data.js] Смотровая точка
+[index.html] Сохранить адрес
+[js/data.js] Туалет на старт
+[js/data.js] апрель – ноябрь
+[js/data.js] июль – сентябрь
+[js/data.js] июнь – сентябрь
+[js/data.js] Құрменті, старт
+[js/app.js] Выберите уровень
+[index.html] Как это работает
+[js/data.js] Көлсай №1, старт
+[index.html] Маршруты попроще
+[index.html] Навигатор / часы
+[js/data.js] Парковка / старт
+[js/app.js] Продолжить поход
+[js/data.js] Ручей на подъёме
+[index.html] Сохранить сервер
+[js/data.js] Туалет на старте
+[index.html] Что будет дальше
+[index.html] ⛰️ Горный хайкер
+[js/app.js] Ещё не всё готово
+[js/app.js] Идёт другой поход
+[js/data.js] Кольсае — Кайынды
+[js/data.js] Контейнер у озера
+[js/data.js] Ручей на перевале
+[index.html] Сохранить контакт
+[js/data.js] Термобельё / флис
+[js/data.js] Туалет на стоянке
+[js/data.js] Тургенская хижина
+[js/data.js] Тургенское ущелье
+[js/app.js] Удалено из планов
+[js/data.js] Укрытие / ночёвка
+[js/data.js] Хребет Кок-Жайляу
+[index.html] за последний год?
+[index.html] ✓ Работает офлайн
+[index.html] 🥾 История походов
+[js/data.js] Мусорный контейнер
+[index.html] Очередь инцидентов
+[index.html] Позвонить близкому
+[js/data.js] Ручей вдоль ущелья
+[js/app.js] Ссылка скопирована
+[js/data.js] Тау-Тургень, старт
+[index.html] Треккинговые палки
+[js/data.js] Туалет на парковке
+[index.html] Что влияет на риск
+[js/app.js] ✓ Контакт добавлен
+[index.html] Дата и время старта
+[js/app.js] Загружаем контакты…
+[index.html] Запланировать поход
+[index.html@title] Карта во весь экран
+[js/app.js] Контакты не выбраны
+[index.html] Контакты устройства
+[js/data.js] Көлсай №2 — Верхнее
+[js/app.js] Не отмечен спальник
+[js/app.js] Не отмечена аптечка
+[js/app.js] Не отмечена палатка
+[index.html] Отправить SOS-метку
+[js/data.js] Стоянка у Көлсай №1
+[index.html] Что у вас уже есть?
+[js/data.js] дня + запас на день
+[js/app.js] нажмите «Позвонить»
+[index.html] SOS — вызвать помощь
+[js/data.js] Вид сверху на каньон
+[js/app.js] Демо-инцидент создан
+[index.html] Какой у вас уровень?
+[js/data.js] Контейнер на стоянке
+[index.html@ph] Мама, друг, напарник
+[js/app.js] Такой номер уже есть
+[js/app.js] ✓ Поход запланирован
+[js/app.js] ✗ Сервер не отвечает
+[index.html] Всё в порядке, отмена
+[index.html@ph] Кому отправлять метку
+[js/data.js] Контейнер на парковке
+[js/app.js] Открыт редактор SMS (
+[js/app.js] Поход начат — без SMS
+[index.html] Создать демо-инцидент
+[js/app.js] Срок продлён на 1 час
+[index.html] Таймер отчёта активен
+[js/app.js] Уже идёт другой поход
+[js/data.js] Чарын — долина замков
+[index.html] Язык / Тіл / Language
+[index.html] Язык · Тіл · Language
+[index.html] если вы не вернётесь?
+[js/app.js] координаты уточняются
+[js/data.js] — выше 2600 м холодно
+[js/data.js] Жгут и эластичный бинт
+[index.html] Новичок — горы впервые
+[index.html] Определяем координаты…
+[index.html] Отправить SMS близкому
+[js/app.js] в очереди (нужен шлюз)
+[index.html] ⚠ Срок возврата прошёл
+[share.html] >Старт</div><div class=
+[js/data.js] Кольсае — Верхнее озеро
+[js/data.js] Куртка от ветра и дождя
+[index.html] Отправить метку близким
+[share.html] >Сигнал</div><div class=
+[index.html] Единый интерфейс событий
+[index.html] Опытный — хожу регулярно
+[index.html] Отправить список близким
+[js/data.js] Свисток и фонарь-мигалка
+[share.html] >Маршрут</div><div class=
+[js/data.js] Алматы, Тургенское ущелье
+[js/data.js] Алматы, хребет Кок-Жайляу
+[js/data.js] Большое Алматинское озеро
+[index.html] ↺ Пройти онбординг заново
+[js/app.js] . Нажмите, чтобы добавить.
+[js/app.js] Добавьте контакт близкого.
+[js/data.js] Кунгей Алатау, многодневка
+[index.html] Сколько походов вы сделали
+[js/data.js] Смотровая «Слониха», старт
+[js/app.js] Выберите маршрут на главной
+[js/data.js] Навигатор или часы с треком
+[js/app.js] Отметьте хотя бы один пункт
+[js/data.js] Телефон заряжен + пауэрбанк
+[index.html] Ознакомился с рекомендациями
+[index.html] Отправить SMS и начать поход
+[index.html] Рекомендации под ваш профиль
+[index.html] Ссылка-метка текущего похода
+[js/data.js] — связи нет, телефон главный
+[js/app.js] Нет навигатора/часов с треком
+[index.html] Сообщение уйдёт автоматически
+[js/app.js] Таймер отчёта активен · через
+[share.html] >Вернуться до</div><div class=
+[js/data.js] Спальник (комфорт 0 °C и ниже)
+[js/app.js] м · GPS работает без интернета
+[js/data.js] Критично — без этого не выходим
+[index.html] Рекомендовано по вашему профилю
+[js/app.js] Сначала завершите текущий поход
+[index.html] Добавить из контактов устройства
+[index.html] Кому уведомлять при походе и SOS
+[js/app.js] Маршрут на пределе вашего уровня
+[js/app.js] Скопировано — отправьте близкому
+[share.html] >Последняя точка</div><div class=
+[js/app.js] Не указан контакт для уведомления
+[js/app.js] Нет мобильной связи на всём треке
+[index.html] без сервера и без интернета у вас
+[index.html] 🏛 Интеграция со службами спасения
+[js/data.js] Алматы, Большое Алматинское ущелье
+[js/data.js] Прогноз погоды утром в день похода
+[js/data.js] Рекомендуется — не блокирует старт
+[js/data.js] Чиликское ущелье, Чарынский каньон
+[js/data.js] Голенищи, перчатки, кепка от солнца
+[js/data.js] Кунгей Алатау, Кольсаинский нацпарк
+[js/app.js] Нет пауэрбанка при отсутствии связи
+[share.html] >Позвонить туристу</a>
+    <a class=
+[js/app.js] В онбординге отмечено «почти ничего»
+[js/app.js] ✓ Поход завершён, близкие уведомлены
+[js/app.js] ✓ Сервер сохранён, метка обновляется
+[js/data.js] Сообщить близким план и срок возврата
+[index.html] Все тревоги проходят через один модуль
+[js/app.js] Добавьте контакт близкого в онбординге
+[js/app.js] Не отправлено — проверьте разрешение SMS
+[js/map.js] ;
+    // тень трека
+    ctx.strokeStyle =
+[js/app.js] — перед стартом предложим маршрут полегче
+[js/app.js] ✓ Рекомендации приняты, критичное собрано
+[index.html] Поход не начат — метка появится при старте
+[js/app.js] Сервер отключён — метка работает по ссылке
+[index.html] Язык можно поменять позже в разделе «Ещё».
+[js/app.js] Нет GPS-сигнала — выйдите на открытое место
+[js/data.js] Карта маршрута скачана офлайн (это приложение)
+[share.html] >Открыть координаты в картах</a>
+
+    <p class=
+[js/app.js] Связь есть, но метку близким оставьте всё равно
+[js/app.js] ⚠ Срок прошёл — отчитайтесь или отправьте метку
+[js/app.js] Сначала отметьте «Ознакомился с рекомендациями».
+[index.html] — он поднимет сервер и напечатает адрес туннеля.
+[js/app.js] ⏰ Через 30 мин срок возврата — отметь, что дошёл
+[index.html] Адрес сервера метки — живое обновление для близких
+[js/data.js] Аптечка: бинт, пластырь, обезболивающее, антисептик
+[js/app.js] Пройти онбординг заново? Данные походов сохранятся.
+[js/app.js] Риск выше среднего. Маршруты, которые вам по силам:
+[js/data.js] Коврик, горелка, туалетная бумага и мешок для мусора
+[js/app.js] <b>Контакт не задан</b> — добавьте в разделе «Близкие»
+[js/data.js] Батончики в карман, термос с чаем, средство от аллергии
+[js/app.js] Пока нет маршрутов вашего уровня — пройдите больше походов
+[js/app.js] На маршруте <b>нет связи</b> — карта, метка и SOS работают офлайн
+[index.html] Выберите язык · Тілді таңдаңыз · Choose a language · 选择语言 · भाषा चुनें
+[js/app.js] Не отметился до срока возврата — приложение <b>само</b> отправит SMS близким
+[js/app.js] Правила: идите группой, разворот — нормально, прогноз погоды проверьте утром
+[index.html] Мы напомним вам отчитаться по таймеру похода, а при тревоге — отправим ему вашу метку.
+[js/app.js] <b>Обязательный шаг:</b> отметьте, что положили в рюкзак — без этого не выходим в поход.<br>
+[js/data.js] Вниз к реке и вдоль каньона до Долины Замков. Солнце без тени — минимум 2 л воды на человека.
+[js/data.js] От Тау-Тургень вверх по ущелью до Тургенской хижины (2683 м). Ночёвка на маршруте, связи нет.
+[index.html] Адрес страницы метки (по умолчанию — локальная страница share.html; на проде — https://hiker.kz/t/)
+[js/data.js] От Көлсай №1 через перевал к озеру Қайыңды. Нет связи, ночёвки без инфраструктуры. Только с опытом.
+[js/data.js] Вдоль Большого Алматинского ущелья до озера на 2511 м. Связь рвётся в ущелье, тропа идёт вдоль реки.
+[js/data.js] От Құрменті до Көлсай №1, дальше до Верхнего (№2). Нет связи на всём треке, ночёвка у Нижнего озера.
+[index.html] Офлайн-компаньон для походов по Казахстану. Расскажите о себе — и рекомендации подберутся под ваш уровень.
+[js/data.js] От Ак-Булак по одноимённому маршруту к хребту Кок-Жайляу. Высокогорье, резкая смена погоды. Только для профи.
+[index.html] : тип, координаты, маршрут, время, статус. Канал «родственник» работает сейчас; канал «МЧС/112» подключается одним эндпоинтом — код клиента готов.
+[index.html] Карта, чек-листы, SOS и метка работают без интернета. GPS-сигнал принимается и без сети — данные копятся локально и отправляются при появлении связи.
+[index.html] Близкий открывает ссылку в браузере — видит вас на карте: последняя точка, время сигнала, статус. Ссылка содержит все данные похода, поэтому открывается
+[index.html] Маршрут появится в разделе «Запланировано» на главной с обратным отсчётом. Перед стартом приложение снова покажет снаряжение, а SMS близким уйдёт автоматически.
+
+=== DYN (53) ===
+[js/app.js] ${m} мин
+[js/app.js] Высота ${r.alt} м
+[js/app.js] ${h} ч ${m % 60} мин
+[js/app.js] Метка: ${tripLink() || '—'}
+[js/app.js] Маршрут: ${rById(t.routeId).name}.
+[js/app.js] Ночёвка на маршруте (${r.days} дня)
+[js/app.js] Высота ${r.alt} м — риск горной болезни
+[js/app.js] Снаряжение на «${r.name}» (${p.name}):\n
+[js/app.js] Сообщение для ${p.contactName} подготовлено.
+[js/app.js] Многодневка: ${r.days} дня без инфраструктуры
+[js/app.js] ⏱ Тревога ${t.overdueAttempts}/${OVERDUE_MAX}:
+[js/app.js] Отметьте, что собрали — осталось ${all - done}.
+[js/app.js] <div class="cl-cat">Инфраструктура маршрута</div>
+[js/app.js] <div class="hint">Нет — уровней выше вашего профиля</div>
+[js/app.js] ПРОСРОЧКА! ${p.name || 'Турист'} не отметился, что дошёл.
+[js/app.js] Маршрут: ${r ? r.name : '-'}. План был вернуться до ${who}.
+[js/data.js] Вода ${water} л на человека + запас ${multi ? '50%' : '20%'}
+[js/app.js] SOS! ${p.name || 'Турист'} в опасности. Координаты: ${coords}.
+[js/app.js] \nМои координаты: ${t.pos.lat.toFixed(5)}, ${t.pos.lng.toFixed(5)}
+[js/data.js] Еда на ${multi ? days + ' дня + запас на день' : 'день + перекус'}
+[js/app.js] Оценка риска: <b>${risk.cat.t.toLowerCase()}</b> (${risk.score}/100)
+[js/app.js] Маршрут сложнее вашего уровня (${r.difficulty} из 5 при уровне ${lvl})
+[js/app.js] Тревогу получат: <b>${notif.map(c => esc(c.name)).join('</b>, <b>')}</b>
+[js/app.js] Подходят по уровню: <b>${fit.map(x => esc(x.name)).join('</b>, <b>')}</b>
+[js/app.js] Тревога уже ушла${t.sosLevel > 1 ? ' (повтор ' + t.sosLevel + '/3)' : ''}.
+[js/app.js] Уровень ${levelLabel(info.level)} · ${info.done} ${plural(info.done)} · ${info.km} км
+[js/app.js] Маршрут: <b>${esc(r.name)}</b> · ${r.days} дн. · риск: <b>${assessRisk(r).cat.t.toLowerCase()}</b>.
+[js/app.js] <div class="hint">Серьёзных рисков не найдено: профиль, снаряжение и маршрут подходят друг другу.</div>
+[js/app.js] Идёте: <b>${esc(r.name)}</b> — ${r.days} дн., ${r.alt} м, сложность ${r.difficulty}/5, сезон ${r.season}
+[js/app.js] Ваш уровень: <b>${levelLabel(info.level)}</b> — ${info.done} ${plural(info.done)}, ${info.km} км пройдено
+[js/app.js] <div class="hint" style="margin-top:6px">Данные инфраструктуры — демо; подтверждаются с парками и гидами.</div>
+[js/app.js] Маршрут: <b>${esc(r.name)}</b> (${r.days} дн.). Выберите, кому отправить SMS — отправим автоматически при старте.
+[js/app.js] <b>Идёт поход:</b> ${esc(rById(t.routeId).name)} — <a href="#" data-nav="trip" style="color:var(--acc2)">открыть</a>
+[js/app.js] По плану вы должны были вернуться в ${new Date(t.deadline).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}.
+[js/app.js] Маршрут: <b>${esc(r.name)}</b> · ваш уровень: <b>${levelLabel(info.level)}</b> — ${info.done} ${plural(info.done)}, ${info.km} км пройдено.
+[js/app.js] Составлено под уровень <b>${levelLabel(info.level)}</b>, маршрут «${esc(r.name)}» (${r.days} дн., ${r.alt} м), сезон: ${r.season}. Работает офлайн.
+[js/app.js] Я в походе: «${r.name}». План: вернуться до ${new Date(t.deadline).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}. Метка: ${tripLink()}
+[js/app.js] Я в походе: «${r.name}». План: вернуться до ${new Date(tmp.deadline).toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' })}. Метка: ${buildLink(tmp, r)}
+[js/app.js] <div class="risk-score">${risk.score}<span>/100</span></div>
+    <div class="risk-cat">${risk.cat.t} риск</div>
+    <div class="prog-track"><i style="width:${risk.score}%"></i></div>
+[js/app.js] : ''}
+      </div>
+      <div class="card-actions">
+        <button class="btn ghost mini" data-plan-open="${pl.id}">Открыть</button>
+        <button class="btn link mini" data-plan-del="${pl.id}">Удалить</button>
+      </div>
+    </div>
+[js/app.js] <span class="chip">Ваш уровень: ${levelLabel(info.level)}</span>
+     <span class="chip ${risk.cat.i >= 2 ? 'warn' : risk.cat.i === 1 ? '' : 'ok'}">Риск: ${risk.cat.t}</span>
+     <span class="chip">Пройдено ${info.done} ${plural(info.done)}</span>
+[js/app.js] <div class="prog-row"><span>Обязательное снаряжение</span><b>${done} / ${all}</b></div>
+    <div class="prog-track"><i style="width:${pct}%"></i></div>
+    <div class="hint" style="margin-top:7px${(!ack || done === all) ? ';color:var(--acc)' : ''}">${hint}</div>
+[js/app.js] <div class="stat"><b>${r.days}</b><span>дней</span></div>
+    <div class="stat"><b>${r.km}</b><span>км</span></div>
+    <div class="stat"><b>${r.alt}</b><span>высота, м</span></div>
+    <div class="stat"><b>${['—','лёгкий','средний','средний','сложный','оч. сложный'][r.difficulty]}</b><span>сложность</span></div>
+[js/app.js] <b>Инцидент ${ev.incident_id} создан.</b><br>
+    ${msg}<br><br>
+    <span style="color:var(--dim)">Канал «родственник»: <b id="sos-sms">отправка…</b>.
+    Канал «МЧС»: событие в очереди — подключается шлюзом (см. раздел «Службы спасения»).</span>
+    <div class="row"><button class="btn ghost" id="sos-copy">Копировать сообщение</button></div>
+[js/app.js] <div class="stat"><b>${fmtLeft(Date.now() - t.startedAt)}</b><span>в пути</span></div>
+    <div class="stat"><b>${t.points.length}</b><span>точек трека</span></div>
+    <div class="stat"><b>${t.pos ? '±' + Math.round(t.pos.acc) + ' м' : 'нет'}</b><span>точность GPS</span></div>
+    <div class="stat"><b>${r.km}</b><span>км по плану</span></div>
+[js/app.js] <div class="cl-cat">${c.name}</div>
+    ${c.items.map(it => {
+      const key = c.name + '|' + it.t;
+      const done = clState[key];
+      const priCls = it.pri === 'must' ? 'pri-must' : it.pri === 'have' ? 'pri-have' : 'pri-should';
+      const priTxt = it.pri === 'must' ? 'критично' : it.pri === 'have' ? 'есть' : 'рекомендуется';
+      return
+[js/app.js] <div class="card"><div class="card-top"><div>
+      <div class="card-name">${r ? r.name : h.routeId}</div>
+      <div class="card-region">${new Date(h.at).toLocaleDateString('ru', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+      </div></div>
+      <div class="card-meta"><span>⏱ ${h.minutes} мин</span><span>📍 ${h.points} точек</span></div></div>
+[js/app.js] <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" data-ntoggle="${c.id}">${c.notify !== false ? '✓ уведомить' : 'выкл'}</button>
+    </div>
+[js/app.js] ).join('')}</div>
+      </div>
+      <div class="card-meta">
+        <span>⏱ ${r.days} д</span><span>📏 ${r.km} км</span><span>⛰ ${r.alt} м</span>
+        ${r.noSignal ? '<span class="tag nosig">нет связи</span>' : ''}
+        ${r.difficulty <= effectiveLevel() ? '<span class="tag rec">рекомендовано</span>' : ''}
+      </div>
+      <div class="card-strip"><canvas data-strip="${r.id}"></canvas></div>
+    </div>
+[js/app.js] <div class="contact-item ${added ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" ${added ? 'disabled' : ''} data-add-name="${esc(c.name)}" data-add-phone="${esc(c.phone)}">${added ? 'добавлено ✓' : '+ добавить'}</button>
+    </div>
+[js/app.js] <div class="contact-item ${c.notify !== false ? 'on' : ''}">
+      <div class="contact-av">${initialOf(c.name)}</div>
+      <div class="contact-main">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-phone">${esc(c.phone)}</div>
+      </div>
+      <button class="contact-toggle" data-toggle="${c.id}">${c.notify !== false ? 'уведомлять ✓' : 'выкл'}</button>
+      <button class="contact-del" data-del="${c.id}">✕</button>
+    </div>
+[js/app.js] <div class="card" data-alt="${a.r.id}">
+        <div class="card-top">
+          <div>
+            <div class="card-name">${esc(a.r.name)}</div>
+            <div class="card-region">${esc(a.r.region)}</div>
+          </div>
+          <span class="tag ${a.risk < 25 ? 'rec' : a.risk < 50 ? '' : 'nosig'}">риск ${a.risk}</span>
+        </div>
+        <div class="card-meta">
+          <span>⏱ ${a.r.days} д</span><span>📏 ${a.r.km} км</span><span>⛰ ${a.r.alt} м</span>
+          <span>сложность ${a.r.difficulty}/5</span>
+        </div>
+      </div>
+[js/app.js] <div class="card"><div class="card-top">
+      <div><div class="card-name">${e.type} · ${e.incident_id}</div>
+      <div class="card-region">${e.location ? e.location.lat.toFixed(3) + ', ' + e.location.lon.toFixed(3) : 'без координат'} · ${new Date(e.last_signal_at).toLocaleTimeString('ru')}</div></div>
+      <span class="tag ${e.status === 'open' ? 'nosig' : 'rec'}">${e.status === 'open' ? 'в очереди' : 'закрыт'}</span>
+    </div>
+    <div class="card-meta">
+      <span>родственник: ${e.channels.relative}</span><span>МЧС: ${e.channels.mchs}</span>
+      ${e.status === 'open' ?

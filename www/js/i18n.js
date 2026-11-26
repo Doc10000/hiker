@@ -313,6 +313,29 @@ function tk(s) {
 }
 
 /**
+ * Точный перевод, иначе — подстановка русских фрагментов.
+ * Покрывает и статичные строки, и динамические (шаблоны с ${...}),
+ * потому что куски шаблонов тоже лежат в словаре.
+ */
+const _fragKeys = {};
+function translateText(s, dict) {
+  if (!dict) return s;
+  const exact = dict[s];
+  if (exact !== undefined) return exact;
+  let keys = _fragKeys[LANG];
+  if (!keys) {
+    keys = Object.keys(dict).filter(k => k.length >= 2)
+      .sort((a, b) => b.length - a.length);
+    _fragKeys[LANG] = keys;
+  }
+  let out = s;
+  for (const k of keys) {
+    if (out.indexOf(k) !== -1) out = out.split(k).join(dict[k]);
+  }
+  return out;
+}
+
+/**
  * Проходит по текстовым узлам и подставляет перевод.
  * Оригинал запоминается один раз — можно вернуться на русский.
  */
@@ -328,20 +351,20 @@ function applyI18n() {
     const key = raw.trim();
     if (!key) continue;
     const parent = node.parentElement;
-    if (parent && (parent.closest('script, style, pre, code, .link-box, .code'))) continue;
+    if (parent && (parent.closest('script, style, pre, code, .code'))) continue;
     if (node._src === undefined) node._src = raw;
     const src = node._src;
     const srcKey = src.trim();
     if (!dict) { node.nodeValue = src; continue; }          // возврат на русский
-    const out = dict[srcKey];
-    if (out !== undefined) node.nodeValue = src.replace(srcKey, out);
+    const out = translateText(srcKey, dict);
+    if (out !== srcKey) node.nodeValue = out;
   }
 
   // плейсхолдеры
   document.querySelectorAll('input[placeholder]').forEach(inp => {
     if (inp._srcPh === undefined) inp._srcPh = inp.getAttribute('placeholder') || '';
     const src = inp._srcPh.trim();
-    inp.setAttribute('placeholder', !dict ? inp._srcPh : ((dict[src] !== undefined) ? dict[src] : inp._srcPh));
+    inp.setAttribute('placeholder', !dict ? inp._srcPh : translateText(src, dict));
   });
 
   renderLangList();

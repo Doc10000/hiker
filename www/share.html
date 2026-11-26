@@ -65,6 +65,8 @@ a.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--fg)}
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="js/i18n.js"></script>
+<script src="js/i18n_data.js"></script>
 <script src="js/map.js"></script>
 <script>
 (function(){
@@ -148,6 +150,13 @@ a.btn.ghost{background:transparent;border:1px solid var(--line);color:var(--fg)}
     poll();
     setInterval(poll, 15000);
   }
+
+  // локализация: язык, которым пользовался турист (зашит в ссылку)
+  if (d.lng && LANGS.some(l => l.code === d.lng)) {
+    try { localStorage.setItem('lang', d.lng); } catch (e) {}
+  }
+  initLang();
+  applyI18n();
 })();
 </script>
 </body>
