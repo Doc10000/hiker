@@ -11,11 +11,16 @@ const LANGS = [
   { code: 'en', flag: '🇬🇧', name: 'English' },
   { code: 'kk', flag: '🇰🇿', name: 'Қазақша' },
   { code: 'zh', flag: '🇨🇳', name: '中文' },
-  { code: 'hi', flag: '🇮🇳', name: 'हिन्दी' }
+  { code: 'hi', flag: '🇮🇳', name: 'हिन्दी' },
+  { code: 'ar', flag: '🇸🇦', name: 'العربية' },
+  { code: 'ko', flag: '🇰🇷', name: '한국어' },
+  { code: 'tr', flag: '🇹🇷', name: 'Türkçe' }
 ];
 
 /* Словари: {русский текст: перевод} */
 const I18N = {
+  // пустые заготовки — build_i18n.py их заполняет через Object.assign
+  ar: {}, ko: {}, tr: {},
   en: {
     'Маршруты': 'Routes', 'Поход': 'Trip', 'Близкие': 'Contacts', 'Ещё': 'More',
     'Привет': 'Hello', '✓ Работает офлайн': '✓ Works offline',
@@ -339,8 +344,37 @@ function translateText(s, dict) {
  * Проходит по текстовым узлам и подставляет перевод.
  * Оригинал запоминается один раз — можно вернуться на русский.
  */
+let _i18nBusy = false;
+const _CYR = /[А-Яа-яЁё]/;
+
 function applyI18n() {
+  if (_i18nBusy) return;
+  _i18nBusy = true;
+  try { applyI18nInner(); } finally { _i18nBusy = false; }
+}
+
+/** Ловим любой поздний рендер: появился русский текст — сразу переводим.
+ *  Так кнопки и подписи не остаются на русском, где бы их ни вывели. */
+const _i18nObs = new MutationObserver(muts => {
+  if (LANG === 'ru' || _i18nBusy) return;
+  for (const m of muts) {
+    if (m.type === 'characterData' && _CYR.test(m.target.nodeValue || '')) {
+      applyI18n(); return;
+    }
+    if (m.type === 'childList') {
+      for (const n of m.addedNodes) {
+        const t = n.nodeType === 3 ? (n.nodeValue || '')
+                : (n.nodeType === 1 ? (n.textContent || '') : '');
+        if (t && _CYR.test(t)) { applyI18n(); return; }
+      }
+    }
+  }
+});
+
+function applyI18nInner() {
   document.documentElement.lang = LANG;
+  // арабский — справа налево
+  document.documentElement.dir = (LANG === 'ar') ? 'rtl' : 'ltr';
   const dict = LANG === 'ru' ? null : I18N[LANG];
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   const nodes = [];
@@ -351,13 +385,18 @@ function applyI18n() {
     const key = raw.trim();
     if (!key) continue;
     const parent = node.parentElement;
-    if (parent && (parent.closest('script, style, pre, code, .code'))) continue;
+    if (parent && (parent.closest('script, style, pre, code, .code, [data-no-i18n]'))) continue;
     if (node._src === undefined) node._src = raw;
     const src = node._src;
     const srcKey = src.trim();
-    if (!dict) { node.nodeValue = src; continue; }          // возврат на русский
+    if (!dict) {                                  // возврат на русский
+      if (node.nodeValue !== src) node.nodeValue = src;
+      continue;
+    }
     const out = translateText(srcKey, dict);
-    if (out !== srcKey) node.nodeValue = out;
+    // важно: присваиваем ТОЛЬКО если текст реально изменился,
+    // иначе MutationObserver снова поймает мутацию и уйдёт в цикл
+    if (out !== srcKey && node.nodeValue !== out) node.nodeValue = out;
   }
 
   // плейсхолдеры
@@ -393,6 +432,12 @@ function renderLangList() {
   // два места: первый экран выбора языка и раздел «Ещё»
   ['lang-list-start', 'lang-list'].forEach(id => {
     const box = document.getElementById(id);
-    if (box) box.innerHTML = html;
+    // только при реальном изменении — иначе MutationObserver зациклится
+    if (box && box.innerHTML !== html) box.innerHTML = html;
   });
+}
+
+// наблюдаем за DOM: любой поздний русский текст переводится автоматически
+if (document.body) {
+  _i18nObs.observe(document.body, { childList: true, subtree: true, characterData: true });
 }
