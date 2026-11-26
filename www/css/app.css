@@ -195,6 +195,8 @@ input{font:inherit}
   display:grid; place-items:center; padding:0;
 }
 .map-fs:active{transform:scale(.93)}
+.map-fit{right:56px}
+.map-wrap.fs .map-fit{right:66px}
 .map-wrap.fs{
   position:fixed; inset:0; z-index:900; border-radius:0; border:none; margin:0;
   height:100vh !important; box-shadow:none;

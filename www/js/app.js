@@ -501,7 +501,9 @@ function showRoute(r) {
   const t = DB.get('trip', null);
   const you = (t && t.active && t.routeId === r.id) ? lastPos(t) : null;
   const youAcc = (you && t.pos) ? t.pos.acc : 0;
-  MapRender.draw(canvas, r.path || r.track, { you, youAcc, poi: r.poi, trails: r.trailPaths });
+  MapRender.draw(canvas, r.path || r.track, {
+    you, youAcc, poi: r.poi, trails: r.trailPaths, routeKey: 'route:' + r.id
+  });
   renderPoi(r);
 
   // уровень и риск — сразу на карточке маршрута
@@ -566,6 +568,16 @@ document.getElementById('route-map-fs').onclick = e => {
   toggleMapFs('route-map-wrap', () => {
     if (currentRoute && !document.getElementById('screen-route').hidden) showRoute(currentRoute);
   });
+};
+
+// ⌖ — вернуть вид на весь маршрут (после зума кнопка не сбрасывается сама)
+document.getElementById('route-map-fit').onclick = e => {
+  e.stopPropagation();
+  MapRender.fit(document.getElementById('route-map'));
+};
+document.getElementById('trip-map-fit').onclick = e => {
+  e.stopPropagation();
+  MapRender.fit(document.getElementById('trip-map'));
 };
 
 /* ───────── права на геолокацию ─────────
@@ -957,11 +969,14 @@ function renderTrip() {
   // карта
   const canvas = document.getElementById('trip-map');
   canvas.style.height = '190px';
-  MapRender.draw(canvas, r.track, {
+  const trail = r.path || r.track;
+  MapRender.draw(canvas, trail, {
     you: lastPos(t),
     youAcc: t.pos ? t.pos.acc : 0,
-    progress: MapRender.progressOf(r.track, lastPos(t)),
-    poi: r.poi
+    progress: MapRender.progressOf(trail, lastPos(t)),
+    poi: r.poi,
+    trails: r.trailPaths,
+    routeKey: 'trip:' + t.routeId
   });
 
   // статистика

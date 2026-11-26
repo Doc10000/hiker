@@ -184,8 +184,9 @@ const MapRender = (() => {
         boxZoom: true,
         keyboard: true,
         scrollWheelZoom: false,   // колесо не ворует скролл страницы; зум — кнопками и pinch
-        zoomSnap: 0.5,
-        zoomDelta: 0.5
+        zoomSnap: 0.5,            // pinch — с шагом 0.5
+        zoomDelta: 1,             // кнопки +/− — полный уровень (быстрее докрутить до ~50 м)
+        minZoom: 8
       });
       const tiles = L.tileLayer(TILE_URL, { maxZoom: 22, maxNativeZoom: 19, attribution: TILE_ATTR, className: 'osm-tiles' }).addTo(map);
       let errors = 0;
@@ -255,8 +256,22 @@ const MapRender = (() => {
       if (st.acc) { st.map.removeLayer(st.acc); st.acc = null; }
     }
 
-    st.map.fitBounds(L.latLngBounds(latlngs), { padding: [22, 22] });
+    // подгоняем вид ТОЛЬКО при первом показе или смене маршрута —
+    // иначе каждый ререндер (в т.ч. в полноэкране) отматывал карту назад
+    const key = opts.routeKey || '';
+    if (st.fittedKey !== key) {
+      st.map.fitBounds(L.latLngBounds(latlngs), { padding: [22, 22] });
+      st.fittedKey = key;
+    }
     st.map.invalidateSize();
+  }
+
+  /** Показать весь маршрут заново (кнопка ⌖) */
+  function fit(canvas) {
+    const st = canvas && canvas._lm;
+    if (!st) return;
+    const ll = st.line.getLatLngs();
+    if (ll && ll.length) st.map.fitBounds(L.latLngBounds(ll), { padding: [22, 22] });
   }
 
   /**
@@ -303,5 +318,5 @@ const MapRender = (() => {
   window.addEventListener('online', () =>
     live.forEach(c => { if (c._lm) c._lm.map.invalidateSize(); }));
 
-  return { draw, progressOf };
+  return { draw, progressOf, fit };
 })();
