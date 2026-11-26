@@ -200,12 +200,25 @@ def main():
             relation_poly = real["relation"]["poly"]
         ways_by_route = real.get("ways", {})
 
+    # тропы, собранные build_trails.py / route_valhalla.py
+    osm_routes = {}
+    trails_file = os.path.join("scripts", "route_trails.json")
+    if os.path.exists(trails_file):
+        with open(trails_file, encoding="utf-8") as f:
+            osm_routes = json.load(f).get("routes", {})
+
     blocks = []
     for r in ROUTES:
         routes_trails = []
+        # реальная геометрия тропы (цепочка ways OSM или Valhalla)
+        if r["id"] in osm_routes:
+            poly = decimate(osm_routes[r["id"]], 500)
+            if len(poly) > 2 and hav(poly[0], tuple(r["track"][0])) > hav(poly[-1], tuple(r["track"][0])):
+                poly = poly[::-1]              # старт должен быть в начале
+            r = dict(r, track=poly)
         if r["id"] == "kok-zhaylyau" and relation_poly:
             # реальный маршрут OSM «Ак-Булак – Кок Жайлау» — им и заменяем трек
-            poly = decimate(relation_poly, 16)
+            poly = decimate(relation_poly, 500)
             # разворачиваем так, чтобы финиш был у Кок-Жайляу (43.1424, 77.0040)
             target = (43.1424, 77.0040)
             if hav(poly[0], target) < hav(poly[-1], target):
