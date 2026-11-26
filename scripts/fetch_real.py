@@ -38,7 +38,7 @@ def fetch(q, tries=4):
 parts = ["relation(" + str(RELATION_ID) + ")"]
 for bb in BBOX.values():
     parts.append('way["highway"~"^(path|footway|track|bridleway|steps)$"](' + bb + ")")
-q = "[out:json][timeout:240];(" + ";".join(parts) + ");out geom;"
+q = "[out:json][timeout:120];(" + ";".join(parts) + ";);out geom;"
 print("query ok, идёт запрос...", flush=True)
 js = fetch(q)
 

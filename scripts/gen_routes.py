@@ -131,6 +131,18 @@ def decimate(poly, n=14):
     return out
 
 
+def hav(a, b):
+    """Расстояние в метрам (грубо, по градусам)."""
+    import math
+    dy = (a[0] - b[0]) * 111320.0
+    dx = (a[1] - b[1]) * 111320.0 * math.cos(math.radians((a[0] + b[0]) / 2))
+    return math.hypot(dx, dy)
+
+
+def poly_len(poly):
+    return sum(hav(poly[i], poly[i + 1]) for i in range(len(poly) - 1))
+
+
 def fmt_num(x):
     s = ("%.6f" % x).rstrip("0").rstrip(".")
     return s if s else "0"
@@ -193,11 +205,23 @@ def main():
         routes_trails = []
         if r["id"] == "kok-zhaylyau" and relation_poly:
             # реальный маршрут OSM «Ак-Булак – Кок Жайлау» — им и заменяем трек
-            r = dict(r, track=decimate(relation_poly, 16))
-        for w in ways_by_route.get(r["id"], [])[:3]:
+            poly = decimate(relation_poly, 16)
+            # разворачиваем так, чтобы финиш был у Кок-Жайляу (43.1424, 77.0040)
+            target = (43.1424, 77.0040)
+            if hav(poly[0], target) < hav(poly[-1], target):
+                poly = poly[::-1]
+            r = dict(r, track=poly)
+        cand = []
+        for w in ways_by_route.get(r["id"], []):
             poly = w.get("poly") or []
-            if len(poly) >= 4:
-                routes_trails.append(decimate(poly, 10))
+            if len(poly) < 4:
+                continue
+            L = poly_len(poly)
+            if L >= 200:                      # только осмысленные тропы
+                cand.append((L, poly))
+        cand.sort(key=lambda x: -x[0])
+        for _L, poly in cand[:2]:
+            routes_trails.append(decimate(poly, 10))
         blocks.append(js_route(r, routes_trails))
 
     new_block = "const ROUTES = [\n" + ",\n".join(blocks) + "\n];"
